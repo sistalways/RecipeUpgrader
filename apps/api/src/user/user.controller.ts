@@ -2,4 +2,6 @@ import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nes
 
 
 @Controller('user')
-export class UserController {}
+export class UserController {
+    
+}
