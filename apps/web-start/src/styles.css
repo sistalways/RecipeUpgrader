@@ -100,3 +100,126 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     text-align: center;
   }
+
+ /* ========== Recipe Upgrader CONTENT ========== */
+
+  /* Modal Overlay */
+.ModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+  
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 50;
+  }
+  
+  /* Form Container */
+  .RecipeForm {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 20px;
+    max-width: 400px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    font-family: 'Inter', sans-serif;
+  }
+  
+  /* Form Title */
+  .FormTitle {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #065f46;
+  }
+  
+  /* Labels */
+  .FormLabel {
+    display: flex;
+    flex-direction: column;
+    font-weight: 600;
+    color: #064e3b;
+    font-size: 1rem;
+  }
+  
+  /* Inputs */
+  .FormInput,
+  .FormSelect,
+  .FormTextarea {
+    margin-top: 5px;
+    padding: 0.7rem;
+    border-radius: 12px;
+    border: 1px solid #22c55e;
+    font-size: 1rem;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  /* Buttons Container */
+  .FormButtons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+  
+  /* Submit Button */
+  .SubmitButton {
+    background-color: #22c55e;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 999px;
+    font-weight: 600;
+    box-shadow: 0 10px 20px rgba(34, 197, 94, 0.25);
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  
+  .SubmitButton:hover {
+    background-color: #16a34a;
+    transform: translateY(-2px);
+  }
+  
+  /* Cancel Button */
+  .CancelButton {
+    background-color: #6c757d;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  
+  .CancelButton:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+  }
+  
+  /* Create Recipe Button */
+  .CreateRecipeButton {
+    margin-top: 2rem;
+    padding: 0.9rem 2.2rem;
+    border-radius: 999px;
+    background: #22c55e;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 10px 20px rgba(34, 197, 94, 0.25);
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  
+  .CreateRecipeButton:hover {
+    background: #16a34a;
+    transform: translateY(-2px);
+  }
+  
