@@ -21,6 +21,7 @@
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.0",
+    "@prisma/client": "^7.4.2",
     "@repo/api": "*",
     "ansis": "^4.1.0",
     "jwks-rsa": "^3.2.2",

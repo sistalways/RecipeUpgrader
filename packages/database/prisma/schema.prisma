@@ -14,9 +14,50 @@ datasource db {
 
 
 model User {
-  id            String    @id @default(cuid())
+  id            Int    @id @default(autoincrement())
   name          String?
   email         String?   @unique
   emailVerified DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  recipies      Recipe[]
+  Authentications Authentication[]
+  ingredients ingredient[]
+
+}
+
+model Authentication {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  provider   String
+  providerId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+} 
+
+model ingredient {
+  id                  Int    @id @default(autoincrement())
+  recipeId            Int
+  userId              Int
+  ingredientName      String?
+  ingredientQuantity  Int
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  User                User   @relation(fields: [userId], references: [id])
+  recipe              Recipe @relation(fields: [recipeId], references: [id])
+}
+
+
+model Recipe{
+  id                    Int        @id @default(autoincrement())
+  userId                Int
+  recipeName            String 
+  ingredients           ingredient[]
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+  User                  User       @relation(fields: [userId], references: [id])
 }
 
