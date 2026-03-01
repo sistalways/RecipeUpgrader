@@ -23,6 +23,7 @@ export class RecipesService {
         return this.prisma.recipes.create({
             data:{
                 recipeName:recipe.recipeName
+                //userId:recipe.userId
             },
         });
     }
