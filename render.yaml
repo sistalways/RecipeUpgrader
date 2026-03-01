@@ -5,7 +5,7 @@ services:
     plan: free
     rootDir: .
     buildCommand: npm install  && npm run build
-    startCommand: npm run start -w ./apps/api --port 10000 --host 0.0.0.0
+    startCommand: npm run start -w ./apps/api
     preDeployCommand: npx prisma migrate deploy && npx prisma db seed
     healthCheckPath: /
     autoDeploy: true
@@ -20,3 +20,7 @@ services:
         sync: false  # set in Dashboard or via render CLI
       - key: DIRECT_URL
         sync: false  # set in Dashboard or via render CLI
+      - key: VITE_AUTH0_ISSUER_URL
+        sync: false  # e.g. https://your-tenant.auth0.com/
+      - key: VITE_AUTH0_AUDIENCE
+        sync: false  # your API identifier
