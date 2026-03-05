@@ -5,8 +5,8 @@ async function bootstrap() {
   try {
     const app = await NestFactory.create(AppModule);
     // Render and most PaaS require binding to 0.0.0.0 to receive external traffic
-    const port = parseInt(process.env.PORT ?? '3000', 10);
-    const host = process.env.HOST || '0.0.0.0';
+    const port = parseInt(process.env.PORT);
+    const host = process.env.HOST;
 
     app.enableCors({
       origin: ['http://localhost:3000', 'http://localhost:3001', 'https://recipebuilder-fuc3.onrender.com', 'recipe-builder.vjgcs.workers.dev'],
