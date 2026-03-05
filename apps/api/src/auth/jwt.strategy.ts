@@ -28,6 +28,16 @@ function splitSub(sub: string) {
   return { provider, providerId: rest.join('|') };
 }
 
+const ISSUER = process.env.VITE_AUTH0_ISSUER_URL?.replace(/\/$/, '') || '';
+const AUDIENCE = process.env.VITE_AUTH0_AUDIENCE || '';
+
+if (!ISSUER || !AUDIENCE) {
+  throw new Error(
+    'JwtStrategy requires VITE_AUTH0_ISSUER_URL and VITE_AUTH0_AUDIENCE. ' +
+      'Set them in Render Dashboard → Environment (e.g. ISSUER https://your-tenant.auth0.com/)',
+  );
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly prisma: PrismaService) {
@@ -36,12 +46,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         cache: true,
         rateLimit: true,
         jwksRequestsPerMinute: 5,
-        jwksUri: `${process.env.VITE_AUTH0_ISSUER_URL}.well-known/jwks.json`,
+        jwksUri: `${ISSUER}/.well-known/jwks.json`,
       }),
 
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      audience: process.env.VITE_AUTH0_AUDIENCE,
-      issuer: `${process.env.VITE_AUTH0_ISSUER_URL}`,
+      audience: AUDIENCE,
+      issuer: `${ISSUER}/`,
       algorithms: ['RS256'],
     });
   }

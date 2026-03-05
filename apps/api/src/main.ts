@@ -1,7 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
+// Log crashes so Render shows them (unhandledRejection often exits without our catch)
+process.on('unhandledRejection', (reason) => {
+  console.error('unhandledRejection', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('uncaughtException', err);
+});
+
 async function bootstrap() {
+  console.log('[api] bootstrap starting, PORT=%s', process.env.PORT);
   try {
     const app = await NestFactory.create(AppModule);
 
@@ -27,4 +36,4 @@ async function bootstrap() {
   }
 }
 
-bootstrap();
+void bootstrap();
