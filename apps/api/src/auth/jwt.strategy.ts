@@ -72,25 +72,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // 2) If missing, create User + Authentication (using whatever claims we have)
     if (!auth) {
       // create a minimal user that satisfies required fields in the schema
-      const generatedUsername = `${provider}_${providerId}`.slice(0, 191);
+      const generatedName = `${provider}_${providerId}`.slice(0, 191);
       const generatedEmail = `${provider}_${providerId}@auth.local`.slice(0, 191);
 
       try {
         // create and return the nested authentication in one call to avoid a second query
         await this.prisma.user.create({
           data: {
-            username: generatedUsername,
+            name: generatedName,
             email: generatedEmail,
-            // passwordHash is required by schema; external-auth users get an empty string
-            passwordHash: '',
-            authentications: {
+            Authentications: {
               create: {
                 provider,
                 providerId,
               },
             },
           },
-          include: { authentications: true },
+          include: { Authentications: true },
         });
 
         // fetch the authentication with its user relation so `auth` has the same shape

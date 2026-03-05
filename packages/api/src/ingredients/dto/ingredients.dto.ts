@@ -37,6 +37,7 @@ export type IngredientOut = z.infer<typeof IngredientOut>;
 // =========================
 export const IngredientCreateIn = z.object({
   recipeId: z.number(),
+  userId: z.number(),
   ingredientName: z.string().optional(),
   ingredientQuantity: z.number(),
 });

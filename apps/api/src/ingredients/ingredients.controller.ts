@@ -23,9 +23,9 @@ export class IngredientsController {
             return this.ingredients.create(s);
         }
         @Post('Generate')
-        generateFromForm(@Body() s) {
-            const{FormData,RecipeId}=s;
-            return this.ingredients.generateFromForm(FormData,RecipeId);
+        generateFromForm(@Body() s: { FormData: unknown; RecipeId: number; userId: number }) {
+            const { FormData, RecipeId, userId } = s;
+            return this.ingredients.generateFromForm(FormData, RecipeId, userId);
         }
 
         @Delete(':id')

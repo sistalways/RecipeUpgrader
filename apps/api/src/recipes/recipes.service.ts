@@ -5,31 +5,31 @@ import {RecipeCreateIn,RecipeOut} from '@repo/api/recipes/dto/recipes.dto'
 export class RecipesService {
     constructor(private prisma: PrismaService) { }
     findAll() {
-        return this.prisma.recipes.findMany(
+        return this.prisma.recipe.findMany(
             {
-                include:{Ingredients: true}
+                include: { ingredients: true }
             }
         );
     }
 
     findOne(id: number) {
-        return this.prisma.recipes.findUnique({
+        return this.prisma.recipe.findUnique({
             where: { id},
-            include: { Ingredients: true },
+            include: { ingredients: true },
         });
     }
 
-    async create(recipe:RecipeCreateIn): Promise<RecipeOut> {
-        return this.prisma.recipes.create({
-            data:{
-                recipeName:recipe.recipeName
-                //userId:recipe.userId
+    async create(recipe: RecipeCreateIn): Promise<RecipeOut> {
+        return this.prisma.recipe.create({
+            data: {
+                recipeName: recipe.recipeName,
+                User: { connect: { id: recipe.userId } },
             },
-        });
+        }) as Promise<RecipeOut>;
     }
 
     async remove(id: number) {
-        const record = await this.prisma.recipes.findUnique({ where: { id } });
+        const record = await this.prisma.recipe.findUnique({ where: { id } });
     if (!record) {
       throw new NotFoundException('BMI record not found');
     }
@@ -37,7 +37,7 @@ export class RecipesService {
      // throw new ForbiddenException('You can only delete your own BMI records');
    // }
 
-    return this.prisma.recipes.delete({ where: { id } });
+    return this.prisma.recipe.delete({ where: { id } });
     }
 
 }

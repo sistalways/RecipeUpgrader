@@ -38,6 +38,7 @@ export type RecipeOut = z.infer<typeof RecipeOut>;
 // =========================
 export const RecipeCreateIn = z.object({
   recipeName: z.string().min(1, "Recipe name is required"),
+  userId: z.number(),
 });
 export type RecipeCreateIn = z.infer<typeof RecipeCreateIn>;
 

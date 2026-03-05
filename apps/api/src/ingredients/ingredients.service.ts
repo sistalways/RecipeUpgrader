@@ -10,52 +10,51 @@ export class IngredientsService {
         
         ) { }
     findAll() {
-        return this.prisma.ingredients.findMany();
+        return this.prisma.ingredient.findMany();
     }
 
     findOne(id: number) {
-        return this.prisma.ingredients.findUnique({
+        return this.prisma.ingredient.findUnique({
             where: { id },
         });
     }
 
-    async create(ingredient:IngredientCreateIn): Promise<IngredientOut> {
-        return this.prisma.ingredients.create({
-            data:{
-                ingredientName:ingredient.ingredientName,
-                recipeId:ingredient.recipeId,
+    async create(ingredient: IngredientCreateIn): Promise<IngredientOut> {
+        return this.prisma.ingredient.create({
+            data: {
+                ingredientName: ingredient.ingredientName ?? null,
                 ingredientQuantity: ingredient.ingredientQuantity,
-                
+                recipe: { connect: { id: ingredient.recipeId } },
+                User: { connect: { id: ingredient.userId } },
             },
-        });
+        }) as Promise<IngredientOut>;
     }
 
-    async generateFromForm(FormData,RecipeId) {
+    async generateFromForm(FormData: unknown, RecipeId: number, userId: number) {
         const aiResponse = await this.openaiService.generateIngredientsFromForm(FormData);
 
         console.log('AI Response:', JSON.stringify(aiResponse, null, 2));
 
-        const IngredientsToCreate = aiResponse.map((ingredient) => ({
-            ingredientName: ingredient,
+        const IngredientsToCreate = aiResponse.map((item: { name?: string; quantity?: number }) => ({
+            ingredientName: item.name ?? null,
+            ingredientQuantity: item.quantity ?? 0,
             recipeId: RecipeId,
-            ingredientQuantity: ingredient.quantity 
+            userId,
         }));
 
         console.log('Ingredients to create:', JSON.stringify(IngredientsToCreate, null, 2));
 
-        const createdIngredients = this.prisma.ingredients.createMany({
+        const result = await this.prisma.ingredient.createMany({
             data: IngredientsToCreate,
             skipDuplicates: true,
         });
 
-        console.log('Created Ingredients count:', createdIngredients.count);
+        console.log('Created Ingredients count:', result.count);
 
-
-        return createdIngredients;
-        
-      }
+        return result;
+    }
 
     async remove(id: number) {
-        return this.prisma.ingredients.delete({ where: { id } });
+        return this.prisma.ingredient.delete({ where: { id } });
     }
 }
