@@ -23,7 +23,7 @@ export class RecipesService {
         return this.prisma.recipe.create({
             data: {
                 recipeName: recipe.recipeName,
-                User: { connect: { id: recipe.userId } },
+                User: { connect: { id: 1 } },
             },
         }) as Promise<RecipeOut>;
     }

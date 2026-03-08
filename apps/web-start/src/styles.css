@@ -65,6 +65,10 @@ body {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     margin-top: 2rem;
   }
+
+  .NavigationLinks.NavigationLinks--top {
+    margin-top: 0;
+  }
   
   .NavigationLinks a {
     text-decoration: none;
@@ -222,4 +226,297 @@ body {
     background: #16a34a;
     transform: translateY(-2px);
   }
-  
+
+  /* Theme variables for card/modal layout (splits-style) */
+  :root {
+    --text-primary: #065f46;
+    --text-secondary: #047857;
+    --text-tertiary: #6b7280;
+    --card-bg: #ffffff;
+    --border-subtle: #e5e7eb;
+    --border-color: #22c55e;
+    --input-bg: #ffffff;
+  }
+
+  .button-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .button-bar .modal-create {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    background: #22c55e;
+    color: white;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .button-bar .modal-create:hover {
+    background: #16a34a;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 50;
+  }
+
+  .modal-overlay .Create {
+    background: var(--card-bg);
+    padding: 1.5rem 2rem;
+    border-radius: 1rem;
+    max-width: 24rem;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  .modal-overlay .Create h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .modal-overlay .Create input {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+  }
+
+  .modal-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .modal-buttons button {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s;
+  }
+
+  .modal-buttons button:first-child {
+    background: #22c55e;
+    color: white;
+  }
+
+  .modal-buttons button:first-child:hover:not(:disabled) {
+    background: #16a34a;
+  }
+
+  .modal-buttons button:last-child {
+    background: #6b7280;
+    color: white;
+  }
+
+  .modal-buttons button:last-child:hover {
+    background: #4b5563;
+  }
+
+  .modal-buttons button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* ========== Recipe Builder page ========== */
+  .RecipeBuilderContent {
+    max-width: 56rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .RecipeBuilderBar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .RecipeBuilderBar .CreateRecipeButton {
+    margin-top: 0;
+  }
+
+  .RecipeBuilderTitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: #065f46;
+  }
+
+  .RecipeBuilderLoading,
+  .RecipeBuilderEmpty {
+    color: #047857;
+  }
+
+  .RecipeBuilderError {
+    color: #dc2626;
+  }
+
+  .RecipeList {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .RecipeList {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .RecipeCard {
+    padding: 1.5rem;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    transition: box-shadow 0.2s;
+  }
+
+  .RecipeCard:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  }
+
+  .RecipeCardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .RecipeCardTitle {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #065f46;
+  }
+
+  .RecipeCardActions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .RecipeBadge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    background: #d1fae5;
+    color: #047857;
+  }
+
+  .AddIngredientButton {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    background: #22c55e;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+
+  .AddIngredientButton:hover {
+    background: #16a34a;
+  }
+
+  .DeleteButton {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+
+  .DeleteButton:hover {
+    background: #b91c1c;
+  }
+
+  .DeleteButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .IngredientList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .IngredientItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+  }
+
+  .IngredientItemName {
+    font-weight: 600;
+    color: #065f46;
+    margin-bottom: 0.25rem;
+  }
+
+  .IngredientQuantity {
+    font-size: 0.875rem;
+    color: #047857;
+  }
+
+  .IngredientQuantity strong {
+    color: #059669;
+  }
+
+  .RecipeEmptyState {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    border-radius: 0.5rem;
+    background: white;
+    border: 2px dashed #e5e7eb;
+    margin-bottom: 1rem;
+  }
+
+  .RecipeEmptyStateText {
+    color: #047857;
+    margin-bottom: 0.75rem;
+  }
+
+  .RecipeEmptyStateButton {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: #059669;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .RecipeEmptyStateButton:hover {
+    background: #047857;
+  }
+
+  .RecipeCardFooter {
+    font-size: 0.75rem;
+    color: #6b7280;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e5e7eb;
+  }
