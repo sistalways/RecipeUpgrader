@@ -97,7 +97,7 @@ The API deploys to **Render**, the website to **Cloudflare Pages**. Both platfor
 1. In the Cloudflare dashboard: **Workers & Pages** → **Create** → **Pages** → **Connect to Git**, pick this repo.
 2. Build settings:
    - **Framework preset:** None (or Vite)
-   - **Build command:** `pnpm install --frozen-lockfile && pnpm --filter @recipeupgrader/web... run build`
+   - **Build command:** `NODE_ENV=development pnpm install --frozen-lockfile && pnpm --filter @recipeupgrader/web... run build` (Cloudflare Pages sets `NODE_ENV=production` by default, which makes pnpm skip the dev tools — vite, typescript — needed to actually build; the override is just for this install step)
    - **Build output directory:** `apps/web/dist`
    - **Root directory:** `/` (repo root — leave default)
 3. Environment variable (build-time): `VITE_API_BASE_URL` = the Render URL from step 3 above (e.g. `https://recipeupgrader-api.onrender.com`).

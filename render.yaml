@@ -8,7 +8,11 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @recipeupgrader/api... run build
+    # NODE_ENV=production is set below for the running server, but pnpm
+    # skips devDependencies (typescript, @types/node, ...) during install
+    # when NODE_ENV is "production" - and the build itself needs those.
+    # Overriding it to "development" for just the install step avoids that.
+    buildCommand: NODE_ENV=development pnpm install --frozen-lockfile && pnpm --filter @recipeupgrader/api... run build
     startCommand: pnpm --filter @recipeupgrader/api run start
     healthCheckPath: /api/health
     envVars:
