@@ -80,28 +80,7 @@ pnpm test
 
 ## Deployment
 
-The API deploys to **Render**, the website to **Cloudflare Pages**. Both platforms build this repo themselves — nothing is deployed from your machine, and no `.env` file is involved; every value below is entered into that platform's own dashboard.
-
-### API → Render
-
-1. In the Render dashboard: **New +** → **Blueprint**, point it at this GitHub repo. Render reads [`render.yaml`](./render.yaml) and sets up the service automatically.
-2. Render will prompt you to fill in these values (nothing here has a default — Render asks because the blueprint marks them `sync: false`, meaning "ask the human, don't commit it"):
-   - `TOKEN_FACTORY_API_KEY`, `TOKEN_FACTORY_BASE_URL`, `MODEL_FAST`, `MODEL_REASONING` — same values as your local `apps/api/.env`
-   - `USDA_API_KEY` — same as local
-   - `ALLOWED_ORIGINS` — leave a placeholder for now (e.g. `https://example.com`); you'll come back and set this to the real Cloudflare Pages URL once that's deployed (step 4 below)
-3. Deploy. Render gives you a URL like `https://recipeupgrader-api.onrender.com`. Confirm it's alive: `curl https://<your-render-url>/api/health` should return `{"status":"ok"}`.
-4. Once the website is deployed (next section) and you have its URL, go back to the Render service's **Environment** tab and set `ALLOWED_ORIGINS` to that URL, then let it redeploy.
-
-### Website → Cloudflare Pages
-
-1. In the Cloudflare dashboard: **Workers & Pages** → **Create** → **Pages** → **Connect to Git**, pick this repo.
-2. Build settings:
-   - **Framework preset:** None (or Vite)
-   - **Build command:** `NODE_ENV=development pnpm install --frozen-lockfile && pnpm --filter @recipeupgrader/web... run build` (Cloudflare Pages sets `NODE_ENV=production` by default, which makes pnpm skip the dev tools — vite, typescript — needed to actually build; the override is just for this install step)
-   - **Build output directory:** `apps/web/dist`
-   - **Root directory:** `/` (repo root — leave default)
-3. Environment variable (build-time): `VITE_API_BASE_URL` = the Render URL from step 3 above (e.g. `https://recipeupgrader-api.onrender.com`).
-4. Deploy. Cloudflare gives you a URL like `https://recipeupgrader.pages.dev`. Use that to fill in Render's `ALLOWED_ORIGINS` (step 4 above).
+The API runs on **Render**, the website on **Cloudflare Pages**. Both are configured directly in their own dashboards, not from files in this repo (`render.yaml` covers the API's service definition; the dashboard holds the actual secrets).
 
 ## Status
 
