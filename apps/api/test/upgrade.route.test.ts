@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 
-vi.mock("../src/services/recipe/parseRecipe.js", () => ({
-  parseRecipe: vi.fn(async () => ({
+vi.mock("../src/services/recipe/generateBaseRecipe.js", () => ({
+  generateBaseRecipe: vi.fn(async () => ({
     title: "Chicken and rice",
     servings: 2,
     ingredients: [
@@ -41,23 +41,21 @@ describe("POST /api/upgrade", () => {
     await app?.close();
   });
 
-  it("runs the full pipeline and returns validated before/after macros", async () => {
+  it("runs the full pipeline and returns validated standard/upgraded macros", async () => {
     app = await buildServer();
 
     const response = await app.inject({
       method: "POST",
       url: "/api/upgrade",
-      payload: {
-        recipeText: "2 chicken breasts, 1 cup rice",
-        goals: { caloriesPerServing: 500, minProteinPerServingG: 30, servings: 2 },
-      },
+      payload: { dishName: "chicken and rice bowl", goalMode: "bulking", servings: 2 },
     });
 
     expect(response.statusCode).toBe(200);
     const body = response.json();
-    expect(body.original.parsed.title).toBe("Chicken and rice");
+    expect(body.standard.recipe.title).toBe("Chicken and rice");
     expect(body.upgraded.recipe.title).toBe("Lean chicken and rice");
     expect(body.upgraded.macrosPerServing.proteinG).toBe(40);
+    expect(body.resolvedGoals.minProteinPerServingG).toBeGreaterThan(0);
     expect(body.goalsMet).toBe(true);
   });
 
@@ -67,7 +65,7 @@ describe("POST /api/upgrade", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/upgrade",
-      payload: { recipeText: "", goals: { caloriesPerServing: 500, minProteinPerServingG: 30, servings: 2 } },
+      payload: { dishName: "", goalMode: "bulking", servings: 2 },
     });
 
     expect(response.statusCode).toBe(400);
@@ -80,11 +78,19 @@ describe("POST /api/upgrade", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/upgrade",
-      payload: {
-        recipeText: "chicken",
-        goals: { caloriesPerServing: 500, minProteinPerServingG: 30, servings: 2 },
-        notAllowed: true,
-      },
+      payload: { dishName: "chicken", goalMode: "bulking", servings: 2, notAllowed: true },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  it("rejects an unrecognized goal mode", async () => {
+    app = await buildServer();
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/upgrade",
+      payload: { dishName: "chicken", goalMode: "shredding", servings: 2 },
     });
 
     expect(response.statusCode).toBe(400);

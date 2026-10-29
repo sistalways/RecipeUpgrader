@@ -6,15 +6,18 @@
 
 ## 1. What we're building
 
-RecipeUpgrader rewrites any recipe into a version that fits the user's calorie and protein goals, using ingredients they can actually buy at stores near them.
+RecipeUpgrader turns a dish name into a recipe that fits the user's fitness goal and calorie/protein targets, using ingredients they can actually buy at stores near them.
 
 **Core flow:**
-1. User pastes a recipe and sets goals (calories per serving, minimum protein per serving, servings).
-2. A fast NVIDIA Nemotron model parses the recipe into structured ingredients.
-3. Macros are computed **in code** from USDA FoodData Central data. The LLM never invents nutrition numbers.
-4. (Optional) User shares location or enters a ZIP code. We find nearby grocery stores and check which candidate substitutes are available there.
-5. A reasoning Nemotron model rewrites the recipe to hit the goals, preferring ingredients available nearby.
-6. User sees before/after macros, the upgraded recipe, and a shopping list grouped by store. Logged-in users can save it.
+1. User types a dish name (e.g. "cheesecake") and picks a goal mode: cutting, maintaining, or bulking. Servings is also set.
+2. The goal mode maps, in code, to a calorie and minimum-protein target per serving (`services/recipe/goalPresets.ts`, a pure lookup function — no LLM involved in this step, so it's trivial to unit test and to tune).
+3. A fast NVIDIA Nemotron model generates a standard, typical recipe for that dish name at the requested serving count — this is the "before" baseline, not something the user supplied.
+4. Macros are computed **in code** from USDA FoodData Central data, for both the standard recipe and (after step 6) the upgraded one. The LLM never invents nutrition numbers.
+5. (Optional) User shares location or enters a ZIP code. We find nearby grocery stores and check which candidate substitutes are available there.
+6. A reasoning Nemotron model rewrites the standard recipe to hit the resolved goals, preferring ingredients available nearby.
+7. User sees standard-vs-upgraded macros, the upgraded recipe, and a shopping list grouped by store. Logged-in users can save it.
+
+> Note: this supersedes an earlier version of this flow where the user pasted their own recipe text and entered raw numeric goals directly. That path is gone — dish name + goal mode is the only entry point now.
 
 **Hackathon constraints (Nebius x NVIDIA Global AI Hackathon, deadline Fri Oct 30, 2026, 1:00 PM EDT):**
 - **All LLM calls go through Nebius Token Factory** using **NVIDIA Nemotron** models. No other LLM providers anywhere in the codebase.
@@ -48,23 +51,24 @@ RecipeUpgrader rewrites any recipe into a version that fits the user's calorie a
 
 | Task | Model tier | Env var | Why |
 |---|---|---|---|
-| Parse recipe text → structured ingredients | Fast (Nemotron Nano or Super) | `MODEL_FAST` | High volume, simple extraction, low latency and cost |
+| Generate a standard recipe for a dish name | Fast (Nemotron Nano or Super) | `MODEL_FAST` | High volume, simple generation, low latency and cost |
 | Rewrite recipe to hit macro goals using available ingredients | Reasoning (Nemotron Ultra) | `MODEL_REASONING` | Multi-constraint reasoning, quality matters most |
 
 Model IDs live **only** in env vars, never hardcoded. Every model call goes through `apps/api/src/services/llm/` so routing, logging, and validation happen in one place.
 
 ### Request lifecycle for `POST /api/upgrade`
 
-1. Validate request body with Zod (`UpgradeRequestSchema`). Reject on failure with 400.
+1. Validate request body with Zod (`UpgradeRequestSchema`: `dishName`, `goalMode`, `servings`). Reject on failure with 400.
 2. Rate-limit check (per IP for guests, per user ID when authenticated).
-3. `parseRecipe()` → fast model → validate with `ParsedRecipeSchema` → retry once on validation failure → 502 if still invalid.
-4. `computeMacros()` → USDA lookups (cached) → pure TypeScript math.
-5. If location given: `findNearbyStores()` → `checkAvailability()` (Tavily, plus Kroger where applicable) → cached in Supabase with a TTL.
-6. `rewriteRecipe()` → reasoning model, with goals, original macros, and the availability list → validate with `UpgradedRecipeSchema` → retry once → 502 if still invalid.
-7. Recompute macros of the upgraded recipe **in code** and return them alongside the model's output. If they miss the goals, say so in the response; never fake it.
-8. Log latency, model, token usage, and cache hits (no recipe text, no PII).
+3. `goalModeToGoals()` → pure function, no I/O → resolves `goalMode` + `servings` into a `Goals` (calories/serving, min protein/serving). Returned in the response so the user can see what target was actually applied.
+4. `generateBaseRecipe()` → fast model generates a standard, typical recipe for `dishName` at the requested servings → validate with `StandardRecipeSchema` → retry once on validation failure → 502 if still invalid.
+5. `computeMacros()` → USDA lookups (cached) → pure TypeScript math. Run once for the standard recipe.
+6. If location given: `findNearbyStores()` → `checkAvailability()` (Tavily, plus Kroger where applicable) → cached in Supabase with a TTL.
+7. `rewriteRecipe()` → reasoning model, with resolved goals, standard-recipe macros, and the availability list → validate with `UpgradedRecipeSchema` → retry once → 502 if still invalid.
+8. Recompute macros of the upgraded recipe **in code** and return them alongside the model's output. If they miss the goals, say so in the response; never fake it.
+9. Log latency, model, token usage, and cache hits (no dish name beyond what's needed for debugging volume, no PII).
 
-Location failure or absence is **never** an error: steps 5–6 fall back to a normal rewrite.
+Location failure or absence is **never** an error: steps 6–7 fall back to a normal rewrite.
 
 ---
 
@@ -89,7 +93,7 @@ recipeupgrader/
 │       └── src/
 │           ├── schemas/        # Zod schemas shared by web and api (single source of truth)
 │           │   ├── upgrade.ts      # UpgradeRequestSchema, UpgradeResponseSchema
-│           │   ├── recipe.ts       # ParsedRecipeSchema, UpgradedRecipeSchema, IngredientSchema
+│           │   ├── recipe.ts       # StandardRecipeSchema, UpgradedRecipeSchema, IngredientSchema
 │           │   ├── location.ts     # LocationInputSchema, StoreSchema, AvailabilitySchema
 │           │   └── macros.ts       # MacrosSchema
 │           └── index.ts
@@ -107,7 +111,7 @@ recipeupgrader/
 │   │   │   │   │   ├── client.ts       # Token Factory client (OpenAI-compatible)
 │   │   │   │   │   ├── callModel.ts    # one wrapper: timeout, retry, logging, Zod validation
 │   │   │   │   │   └── prompts/        # prompt templates as TS functions, one file per task
-│   │   │   │   ├── recipe/             # parseRecipe, rewriteRecipe
+│   │   │   │   ├── recipe/             # generateBaseRecipe, rewriteRecipe, goalPresets
 │   │   │   │   ├── nutrition/          # USDA lookup + computeMacros (pure functions)
 │   │   │   │   ├── location/           # findNearbyStores (Overpass), checkAvailability (Tavily, Kroger)
 │   │   │   │   └── cache/              # Supabase-backed cache with TTL
@@ -169,7 +173,7 @@ Do not add new dependencies without a clear reason. Prefer well-maintained packa
 
 ### Naming
 - Files: `camelCase.ts` for modules, `PascalCase.tsx` for React components.
-- Functions: verbs (`parseRecipe`, `computeMacros`, `findNearbyStores`).
+- Functions: verbs (`generateBaseRecipe`, `computeMacros`, `findNearbyStores`).
 - Zod schemas: `PascalCaseSchema`. Inferred types: same name without `Schema`.
 - Env vars: `SCREAMING_SNAKE_CASE`.
 
@@ -182,7 +186,7 @@ Do not add new dependencies without a clear reason. Prefer well-maintained packa
 ### Logging
 - Structured JSON logs (Fastify's built-in pino logger).
 - Log: route, status, latency, model name, token counts, cache hit/miss, upstream failures.
-- **Never log:** API keys, auth tokens, full recipe text, raw prompts, precise coordinates, emails.
+- **Never log:** API keys, auth tokens, full dish names at volume (aggregate counts are fine), raw prompts, precise coordinates, emails.
 
 ### Frontend
 - All API calls go through `apps/web/src/api/` and parse responses with the shared Zod schemas.
@@ -221,12 +225,12 @@ These apply to every line of code. AI assistants must follow them even if a prom
 - **Every request body, query string, and route param** is parsed with a Zod schema before use. Use `.strict()` on object schemas to reject unknown keys.
 - **Every LLM output** is parsed with a Zod schema before use. Ask the model for JSON, parse it, validate it. On failure, retry once with the validation error summarized, then fail with `UpstreamError`. Never pass unvalidated model output to the client, the database, or another prompt.
 - **Every third-party API response** (USDA, Overpass, Tavily, Kroger) is parsed with a Zod schema.
-- Set explicit limits in schemas: recipe text max length (e.g. 10,000 chars), max ingredients (e.g. 60), numeric ranges for goals (e.g. calories 100–5,000 per serving), ZIP format (`^\d{5}$`), coordinate ranges.
+- Set explicit limits in schemas: dish name max length (e.g. 200 chars), max ingredients (e.g. 60), numeric ranges for resolved goals (e.g. calories 100-5,000 per serving), ZIP format (`^\d{5}$`), coordinate ranges.
 - Request body size limit at the Fastify level (e.g. 64 KB).
 
 ### 6.3 Untrusted content and prompt injection
 Treat **all** of the following as untrusted data, never as instructions:
-- Recipe text the user pastes
+- The dish name the user enters
 - Tavily search results and any web content
 - Store names and product data from Overpass or Kroger
 - Previous model outputs fed into later prompts

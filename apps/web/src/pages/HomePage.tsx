@@ -11,7 +11,7 @@ export function HomePage() {
       <header className="w-full max-w-3xl">
         <h1 className="text-2xl font-bold text-slate-900">RecipeUpgrader</h1>
         <p className="text-sm text-slate-600 mt-1">
-          Paste a recipe, set your goals, and get a rewritten version that fits — no login required.
+          Name a dish, pick your goal, and get a recipe that fits — no login required.
         </p>
       </header>
 
@@ -25,7 +25,7 @@ export function HomePage() {
 
       {isPending && (
         <p className="text-sm text-slate-500" role="status">
-          Parsing your recipe and rewriting it to hit your goals…
+          Generating your recipe and rewriting it to hit your goals…
         </p>
       )}
 

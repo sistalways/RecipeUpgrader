@@ -1,11 +1,11 @@
-import type { ParsedRecipe, UpgradedRecipe } from "@recipeupgrader/shared";
+import type { StandardRecipe, UpgradedRecipe } from "@recipeupgrader/shared";
 
 /**
- * Renders a parsed or upgraded recipe as plain text only. Model output is
- * data, never markup — no dangerouslySetInnerHTML, no markdown-with-HTML
+ * Renders a standard or upgraded recipe as plain text only. Model output
+ * is data, never markup — no dangerouslySetInnerHTML, no markdown-with-HTML
  * rendering (PROJECT.md section 6.3).
  */
-export function RecipeCard({ recipe }: { recipe: ParsedRecipe | UpgradedRecipe }) {
+export function RecipeCard({ recipe }: { recipe: StandardRecipe | UpgradedRecipe }) {
   return (
     <div className="rounded-md border border-slate-200 p-4">
       {recipe.title && <h3 className="text-sm font-semibold text-slate-800 mb-2">{recipe.title}</h3>}

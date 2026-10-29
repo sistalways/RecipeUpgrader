@@ -4,7 +4,7 @@ import { UpstreamError } from "../../lib/errors.js";
 import { logger } from "../../lib/logger.js";
 
 interface CallModelParams<T> {
-  /** Short label for logs, e.g. "parseRecipe" or "rewriteRecipe". Never the prompt itself. */
+  /** Short label for logs, e.g. "generateBaseRecipe" or "rewriteRecipe". Never the prompt itself. */
   task: string;
   /** Model ID, always from env (config.ts), never hardcoded. */
   model: string;

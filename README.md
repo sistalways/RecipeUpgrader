@@ -1,17 +1,18 @@
 # RecipeUpgrader
 
-Rewrites any recipe into a version that fits your calorie and protein goals, using ingredients you can actually buy nearby.
+Turns a dish name into a recipe that fits your fitness goal, using ingredients you can actually buy nearby.
 
 Built for the **Nebius x NVIDIA Global AI Hackathon**. Full architecture, conventions, and security rules live in [PROJECT.md](./PROJECT.md) — read that first if you're contributing.
 
 ## How it works
 
-1. Paste a recipe and set goals (calories/serving, minimum protein/serving, servings).
-2. A fast **NVIDIA Nemotron** model (via **Nebius Token Factory**) parses it into structured ingredients.
-3. Macros are computed **in code** from USDA FoodData Central data — the LLM never invents nutrition numbers.
-4. *(Coming soon)* Nearby grocery stores and ingredient availability, via OpenStreetMap + Tavily.
-5. A reasoning Nemotron model rewrites the recipe to hit your goals.
-6. You see before/after macros and the upgraded recipe. No login required.
+1. Name a dish (e.g. "cheesecake"), pick a goal — cutting, maintaining, or bulking — and set servings.
+2. Your goal maps, in code, to a calorie and protein target per serving (no LLM involved in that step).
+3. A fast **NVIDIA Nemotron** model (via **Nebius Token Factory**) generates a standard, typical recipe for that dish — the "before" baseline.
+4. Macros are computed **in code** from USDA FoodData Central data — the LLM never invents nutrition numbers.
+5. *(Coming soon)* Nearby grocery stores and ingredient availability, via OpenStreetMap + Tavily.
+6. A reasoning Nemotron model rewrites the recipe to hit your resolved goals.
+7. You see standard-vs-upgraded macros and the upgraded recipe. No login required.
 
 ## Project structure
 

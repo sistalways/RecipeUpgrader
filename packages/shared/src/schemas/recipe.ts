@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const MAX_INGREDIENTS = 60;
 export const MAX_STEPS = 60;
-export const MAX_RECIPE_TEXT_LENGTH = 10_000;
+export const MAX_DISH_NAME_LENGTH = 200;
 export const MAX_FIELD_LENGTH = 200;
 
 /**
@@ -22,10 +22,12 @@ export const IngredientSchema = z
 export type Ingredient = z.infer<typeof IngredientSchema>;
 
 /**
- * Output of the fast parsing model: the recipe text turned into structured
- * data. This is untrusted model output until it passes this schema.
+ * Output of the fast generation model: a standard, typical recipe for a
+ * dish name, at the requested serving count. This is the "before" baseline
+ * for the upgrade, not something the user supplied. It is untrusted model
+ * output until it passes this schema.
  */
-export const ParsedRecipeSchema = z
+export const StandardRecipeSchema = z
   .object({
     title: z.string().trim().max(MAX_FIELD_LENGTH).optional(),
     servings: z.number().int().positive().max(100),
@@ -34,7 +36,7 @@ export const ParsedRecipeSchema = z
   })
   .strict();
 
-export type ParsedRecipe = z.infer<typeof ParsedRecipeSchema>;
+export type StandardRecipe = z.infer<typeof StandardRecipeSchema>;
 
 /**
  * Output of the reasoning model: the rewritten recipe. Still just data —

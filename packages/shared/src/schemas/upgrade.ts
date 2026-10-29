@@ -1,10 +1,21 @@
 import { z } from "zod";
-import { MAX_RECIPE_TEXT_LENGTH, ParsedRecipeSchema, UpgradedRecipeSchema } from "./recipe.js";
+import { MAX_DISH_NAME_LENGTH, StandardRecipeSchema, UpgradedRecipeSchema } from "./recipe.js";
 import { AvailabilitySchema, LocationInputSchema } from "./location.js";
 import { MacrosSchema } from "./macros.js";
 
 /**
+ * The user's fitness goal for this recipe. Maps to a calorie/protein target
+ * per serving in code (apps/api/src/services/recipe/goalPresets.ts) — the
+ * user picks a mode, not raw numbers.
+ */
+export const GoalModeSchema = z.enum(["cutting", "maintaining", "bulking"]);
+
+export type GoalMode = z.infer<typeof GoalModeSchema>;
+
+/**
  * Goals the rewritten recipe should hit, always expressed per serving.
+ * Resolved server-side from a GoalMode; never supplied directly by the
+ * client.
  */
 export const GoalsSchema = z
   .object({
@@ -18,8 +29,9 @@ export type Goals = z.infer<typeof GoalsSchema>;
 
 export const UpgradeRequestSchema = z
   .object({
-    recipeText: z.string().trim().min(1).max(MAX_RECIPE_TEXT_LENGTH),
-    goals: GoalsSchema,
+    dishName: z.string().trim().min(1).max(MAX_DISH_NAME_LENGTH),
+    goalMode: GoalModeSchema,
+    servings: z.number().int().positive().max(100),
     location: LocationInputSchema.optional(),
   })
   .strict();
@@ -28,9 +40,10 @@ export type UpgradeRequest = z.infer<typeof UpgradeRequestSchema>;
 
 export const UpgradeResponseSchema = z
   .object({
-    original: z
+    resolvedGoals: GoalsSchema,
+    standard: z
       .object({
-        parsed: ParsedRecipeSchema,
+        recipe: StandardRecipeSchema,
         macrosPerServing: MacrosSchema,
       })
       .strict(),

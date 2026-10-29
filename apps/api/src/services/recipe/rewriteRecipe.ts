@@ -2,7 +2,7 @@ import type {
   Availability,
   Goals,
   Macros,
-  ParsedRecipe,
+  StandardRecipe,
   UpgradedRecipe,
 } from "@recipeupgrader/shared";
 import { UpgradedRecipeSchema } from "@recipeupgrader/shared";
@@ -11,12 +11,12 @@ import { callModel } from "../llm/callModel.js";
 import { buildRewriteRecipePrompt } from "../llm/prompts/rewriteRecipe.js";
 
 /**
- * Rewrites a parsed recipe to hit calorie/protein goals, using the
+ * Rewrites the standard recipe to hit calorie/protein goals, using the
  * reasoning model. `availability`, when present, is already-condensed
  * structured data (never raw web text) per PROJECT.md section 6.3.
  */
 export async function rewriteRecipe(params: {
-  original: ParsedRecipe;
+  original: StandardRecipe;
   originalMacros: Macros;
   goals: Goals;
   availability?: Availability[];

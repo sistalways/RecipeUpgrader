@@ -2,13 +2,15 @@ import { describe, expect, it } from "vitest";
 import {
   GoalsSchema,
   LocationInputSchema,
+  MAX_DISH_NAME_LENGTH,
   UpgradeRequestSchema,
 } from "@recipeupgrader/shared";
 
 describe("UpgradeRequestSchema", () => {
   const validBody = {
-    recipeText: "1 cup rice, 2 chicken breasts",
-    goals: { caloriesPerServing: 500, minProteinPerServingG: 30, servings: 2 },
+    dishName: "cheesecake",
+    goalMode: "cutting" as const,
+    servings: 2,
   };
 
   it("accepts a well-formed request", () => {
@@ -20,16 +22,21 @@ describe("UpgradeRequestSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects empty recipe text", () => {
-    const result = UpgradeRequestSchema.safeParse({ ...validBody, recipeText: "" });
+  it("rejects an empty dish name", () => {
+    const result = UpgradeRequestSchema.safeParse({ ...validBody, dishName: "" });
     expect(result.success).toBe(false);
   });
 
-  it("rejects recipe text over the max length", () => {
+  it("rejects a dish name over the max length", () => {
     const result = UpgradeRequestSchema.safeParse({
       ...validBody,
-      recipeText: "a".repeat(10_001),
+      dishName: "a".repeat(MAX_DISH_NAME_LENGTH + 1),
     });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects an unrecognized goal mode", () => {
+    const result = UpgradeRequestSchema.safeParse({ ...validBody, goalMode: "shredding" });
     expect(result.success).toBe(false);
   });
 });
