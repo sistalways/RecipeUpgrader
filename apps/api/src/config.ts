@@ -2,6 +2,16 @@ import "dotenv/config";
 import { z } from "zod";
 
 /**
+ * An env var left blank in a .env file (`FOO=`) comes through as `""`, not
+ * `undefined`. Without this, `z.string().optional()` still rejects it, so
+ * every not-yet-wired-in optional var in .env.example would fail startup
+ * the moment someone copies the file as-is.
+ */
+function optionalString(schema: z.ZodString) {
+  return z.preprocess((v) => (v === "" ? undefined : v), schema.optional());
+}
+
+/**
  * All server-side configuration, validated once at startup. If anything is
  * missing or malformed, the process exits immediately rather than running
  * with a broken or insecure configuration (PROJECT.md section 6.1).
@@ -20,14 +30,14 @@ const EnvSchema = z.object({
   MODEL_FAST: z.string().min(1),
   MODEL_REASONING: z.string().min(1),
 
-  TAVILY_API_KEY: z.string().min(1).optional(),
+  TAVILY_API_KEY: optionalString(z.string().min(1)),
   USDA_API_KEY: z.string().min(1),
-  KROGER_CLIENT_ID: z.string().min(1).optional(),
-  KROGER_CLIENT_SECRET: z.string().min(1).optional(),
+  KROGER_CLIENT_ID: optionalString(z.string().min(1)),
+  KROGER_CLIENT_SECRET: optionalString(z.string().min(1)),
 
-  SUPABASE_URL: z.string().url().optional(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
-  SUPABASE_JWT_SECRET: z.string().min(1).optional(),
+  SUPABASE_URL: optionalString(z.string().url()),
+  SUPABASE_SERVICE_ROLE_KEY: optionalString(z.string().min(1)),
+  SUPABASE_JWT_SECRET: optionalString(z.string().min(1)),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
