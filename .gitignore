@@ -147,3 +147,7 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# apps/web build output (also covered by the generic "dist" rule above,
+# listed explicitly for clarity)
+apps/web/dist
