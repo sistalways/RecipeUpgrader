@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint-typecheck-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Test
+        run: pnpm run test
+        env:
+          # Dummy values so apps/api's Zod-validated config can load in CI.
+          # No real secrets are used; LLM/USDA calls are mocked in tests.
+          TOKEN_FACTORY_API_KEY: ci-test-key
+          TOKEN_FACTORY_BASE_URL: https://example.invalid/v1
+          MODEL_FAST: ci-fast-model
+          MODEL_REASONING: ci-reasoning-model
+          USDA_API_KEY: ci-test-key
