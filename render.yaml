@@ -1,0 +1,28 @@
+# Render deploys the API from this file. In the Render dashboard: New +
+# Blueprint, point it at this GitHub repo. Render provisions the service
+# below and prompts for every env var marked "sync: false" — those are
+# filled in through the Render dashboard, never committed here.
+services:
+  - type: web
+    name: recipeupgrader-api
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @recipeupgrader/api... run build
+    startCommand: pnpm --filter @recipeupgrader/api run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ALLOWED_ORIGINS
+        sync: false # the deployed Cloudflare Pages URL, e.g. https://recipeupgrader.pages.dev
+      - key: TOKEN_FACTORY_API_KEY
+        sync: false
+      - key: TOKEN_FACTORY_BASE_URL
+        sync: false
+      - key: MODEL_FAST
+        sync: false
+      - key: MODEL_REASONING
+        sync: false
+      - key: USDA_API_KEY
+        sync: false
