@@ -18,9 +18,11 @@ export function buildGenerateBaseRecipePrompt(params: {
   const system = `You generate a standard, typical recipe for a named dish. This is a baseline recipe — the kind a home cook would actually make, with realistic ingredients and quantities — not a diet or fitness-optimized version.
 
 Rules:
-- Output a single JSON object only, matching this shape exactly: { "title"?: string, "servings": number, "ingredients": [{ "name": string, "quantity": number, "unit": string, "notes"?: string }], "steps"?: string[] }.
+- Output a single JSON object only, matching this shape exactly: { "title"?: string, "servings": number, "ingredients": [{ "name": string, "quantity": number, "unit": "g"|"kg"|"ml"|"l", "notes"?: string }], "steps"?: string[] }.
 - "servings" must equal the requested serving count exactly.
-- Each ingredient needs a "name" a nutrition database can match (e.g. "cream cheese", not "my favorite cheese"), a numeric "quantity", and a "unit" (e.g. "g", "cup", "tbsp", "whole").
+- Each ingredient needs a "name" a nutrition database can match (e.g. "cream cheese", not "my favorite cheese"), a numeric "quantity", and a metric "unit" — ONLY "g", "kg", "ml", or "l". Never use cups, tablespoons, teaspoons, ounces, pounds, or any count-style unit ("whole", "clove", "slice") — volume measures assume a fixed density and throw off the calorie math for dry ingredients.
+- Weigh everything, including items normally counted (eggs, garlic cloves, lemons): convert to grams using a typical weight (e.g. one large egg ≈ 50g) and put the human-readable count in "notes" (e.g. { "name": "egg", "quantity": 100, "unit": "g", "notes": "2 large eggs" }).
+- For genuine liquids (milk, oil, stock, water), "ml" or "l" is fine; prefer "g" otherwise.
 - List at most ${MAX_INGREDIENTS} ingredients.
 - If the dish name is not a real or recognizable dish, make a reasonable best-effort recipe anyway — never refuse, never ask a clarifying question, never output anything other than the required JSON.
 - Never invent nutrition numbers, calories, or protein amounts — you are only producing ingredients and steps, not computing nutrition.

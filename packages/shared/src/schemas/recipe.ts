@@ -6,15 +6,27 @@ export const MAX_DISH_NAME_LENGTH = 200;
 export const MAX_FIELD_LENGTH = 200;
 
 /**
+ * Metric units only. Volume units like cups/tbsp/tsp assume a fixed
+ * density (roughly water's) to convert to grams, which is wildly wrong for
+ * dry ingredients (flour, sugar, rice) and is the single biggest source of
+ * error in the macro math. Restricting the model to grams/kilograms (and
+ * milliliters/liters for genuine liquids, where density is close enough to
+ * water to be a reasonable approximation) keeps calories accurate.
+ */
+export const UnitSchema = z.enum(["g", "kg", "ml", "l"]);
+
+export type Unit = z.infer<typeof UnitSchema>;
+
+/**
  * A single ingredient line as understood by the system: a name the USDA
- * lookup can match, plus a quantity and unit for macro math.
+ * lookup can match, plus a metric quantity and unit for macro math.
  */
 export const IngredientSchema = z
   .object({
     name: z.string().trim().min(1).max(MAX_FIELD_LENGTH),
     quantity: z.number().positive(),
-    unit: z.string().trim().min(1).max(40),
-    /** Optional note from the model, e.g. "boneless, skinless". Never executed, never trusted as instructions. */
+    unit: UnitSchema,
+    /** Optional note from the model, e.g. "2 large eggs" or "boneless, skinless". Never executed, never trusted as instructions. */
     notes: z.string().trim().max(MAX_FIELD_LENGTH).optional(),
   })
   .strict();

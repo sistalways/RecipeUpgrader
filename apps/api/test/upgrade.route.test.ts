@@ -7,7 +7,7 @@ vi.mock("../src/services/recipe/generateBaseRecipe.js", () => ({
     servings: 2,
     ingredients: [
       { name: "chicken breast", quantity: 200, unit: "g" },
-      { name: "rice", quantity: 1, unit: "cup" },
+      { name: "rice", quantity: 180, unit: "g" },
     ],
   })),
 }));
@@ -18,7 +18,7 @@ vi.mock("../src/services/recipe/rewriteRecipe.js", () => ({
     servings: 2,
     ingredients: [
       { name: "chicken breast", quantity: 300, unit: "g" },
-      { name: "rice", quantity: 0.5, unit: "cup" },
+      { name: "rice", quantity: 90, unit: "g" },
     ],
     substitutionNotes: "More chicken, less rice, to hit the protein target.",
   })),

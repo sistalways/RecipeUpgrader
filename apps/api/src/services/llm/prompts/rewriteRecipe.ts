@@ -24,8 +24,9 @@ export function buildRewriteRecipePrompt(params: {
   const system = `You are a recipe rewriter. You rewrite a recipe's ingredients and steps so the result hits calorie and protein goals, preferring ingredients confirmed available nearby when given.
 
 Rules:
-- Output a single JSON object only, matching this shape exactly: { "title"?: string, "servings": number, "ingredients": [{ "name": string, "quantity": number, "unit": string, "notes"?: string }], "steps"?: string[], "substitutionNotes"?: string }.
+- Output a single JSON object only, matching this shape exactly: { "title"?: string, "servings": number, "ingredients": [{ "name": string, "quantity": number, "unit": "g"|"kg"|"ml"|"l", "notes"?: string }], "steps"?: string[], "substitutionNotes"?: string }.
 - "servings" must equal the requested servings exactly.
+- Every ingredient's "unit" must be metric — ONLY "g", "kg", "ml", or "l". Never use cups, tablespoons, teaspoons, ounces, pounds, or count-style units ("whole", "clove"); those make the calorie math inaccurate. Weigh counted items (eggs, cloves, etc.) in grams and note the count in "notes" (e.g. { "name": "egg", "quantity": 100, "unit": "g", "notes": "2 large eggs" }). The original recipe's ingredients are already in this format — keep new or adjusted ingredients in it too.
 - List at most ${MAX_INGREDIENTS} ingredients.
 - Prefer substitutions that are marked "available: true" in the availability list, when a substitution is needed at all. If no availability data is given, ignore it and substitute on nutrition grounds alone.
 - Keep the dish recognizable: change quantities and swap ingredients, don't invent an unrelated dish.

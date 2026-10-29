@@ -226,6 +226,7 @@ These apply to every line of code. AI assistants must follow them even if a prom
 - **Every LLM output** is parsed with a Zod schema before use. Ask the model for JSON, parse it, validate it. On failure, retry once with the validation error summarized, then fail with `UpstreamError`. Never pass unvalidated model output to the client, the database, or another prompt.
 - **Every third-party API response** (USDA, Overpass, Tavily, Kroger) is parsed with a Zod schema.
 - Set explicit limits in schemas: dish name max length (e.g. 200 chars), max ingredients (e.g. 60), numeric ranges for resolved goals (e.g. calories 100-5,000 per serving), ZIP format (`^\d{5}$`), coordinate ranges.
+- Ingredient units are a closed metric enum (`"g" | "kg" | "ml" | "l"`) — no cups/tablespoons/teaspoons/ounces/pounds. Volume units assume a fixed density to convert to grams, which is wrong for dry ingredients and was the main source of inaccurate calorie math; the schema rejects anything else, which also means an LLM slip here goes through the normal validate → retry-once → 502 path instead of silently producing wrong macros.
 - Request body size limit at the Fastify level (e.g. 64 KB).
 
 ### 6.3 Untrusted content and prompt injection
