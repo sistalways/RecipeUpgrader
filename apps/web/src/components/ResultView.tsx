@@ -2,7 +2,15 @@ import type { UpgradeResponse } from "@recipeupgrader/shared";
 import { MacrosCard } from "./MacrosCard.js";
 import { RecipeCard } from "./RecipeCard.js";
 
-export function ResultView({ result }: { result: UpgradeResponse }) {
+interface ResultViewProps {
+  result: UpgradeResponse;
+  /** Omit entirely to hide the save button (e.g. not signed in). */
+  onSave?: () => void;
+  isSaving?: boolean;
+  isSaved?: boolean;
+}
+
+export function ResultView({ result, onSave, isSaving, isSaved }: ResultViewProps) {
   const { resolvedGoals } = result;
 
   return (
@@ -19,6 +27,16 @@ export function ResultView({ result }: { result: UpgradeResponse }) {
         </p>
         {result.notes && <p className="mt-1 font-normal">{result.notes}</p>}
       </div>
+
+      {onSave && (
+        <button
+          onClick={onSave}
+          disabled={isSaving || isSaved}
+          className="self-start rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 disabled:opacity-50"
+        >
+          {isSaved ? "Saved ✓" : isSaving ? "Saving…" : "Save this recipe"}
+        </button>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="flex flex-col gap-3">
