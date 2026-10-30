@@ -18,6 +18,8 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: "22" # @supabase/supabase-js needs Node's native WebSocket, added in 22
       - key: ALLOWED_ORIGINS
         sync: false # the deployed Cloudflare Pages URL, e.g. https://recipeupgrader.pages.dev
       - key: TOKEN_FACTORY_API_KEY
