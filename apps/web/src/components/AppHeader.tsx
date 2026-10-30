@@ -17,9 +17,21 @@ export function AppHeader({ page, onNavigate }: AppHeaderProps) {
     <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur-sm">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-8">
         <div className="flex items-center gap-3">
-          <span className="text-lg font-extrabold tracking-tight text-stone-900">
-            Recipe<span className="text-emerald-600">Upgrader</span>
-          </span>
+          {isAuthAvailable ? (
+            <button
+              onClick={() => {
+                if (session) void signOut();
+                exitGuestMode();
+              }}
+              className="text-lg font-extrabold tracking-tight text-stone-900"
+            >
+              Recipe<span className="text-emerald-600">Upgrader</span>
+            </button>
+          ) : (
+            <span className="text-lg font-extrabold tracking-tight text-stone-900">
+              Recipe<span className="text-emerald-600">Upgrader</span>
+            </span>
+          )}
           {session && page === "tool" && (
             <Button variant="secondary" onClick={() => onNavigate("saved")}>
               Saved recipes

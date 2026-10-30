@@ -12,20 +12,21 @@ interface ResultViewProps {
 }
 
 export function ResultView({ result, onSave, isSaving, isSaved }: ResultViewProps) {
-  const { resolvedGoals } = result;
+  const caloriesDelta = Math.round(
+    result.upgraded.macrosPerServing.caloriesKcal - result.standard.macrosPerServing.caloriesKcal,
+  );
+  const proteinDelta = Math.round(
+    result.upgraded.macrosPerServing.proteinG - result.standard.macrosPerServing.proteinG,
+  );
 
   return (
     <div className="flex w-full max-w-3xl flex-col gap-6">
-      <div
-        className={`rounded-xl px-4 py-3 text-sm font-semibold ${
-          result.goalsMet ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"
-        }`}
-      >
-        {result.goalsMet ? "Goals met ✓" : "Goals not fully met"}
-        <p className="mt-1 text-xs font-normal opacity-80">
-          Target: {resolvedGoals.caloriesPerServing} kcal and at least {resolvedGoals.minProteinPerServingG}g
-          protein per serving.
-        </p>
+      <div className="rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+        {caloriesDelta <= 0
+          ? `${Math.abs(caloriesDelta)} fewer calories`
+          : `${caloriesDelta} more calories`}{" "}
+        · {proteinDelta >= 0 ? `+${proteinDelta}g protein` : `${proteinDelta}g protein`} vs. the standard
+        recipe
         {result.notes && <p className="mt-1 text-xs font-normal opacity-80">{result.notes}</p>}
       </div>
 
@@ -38,13 +39,13 @@ export function ResultView({ result, onSave, isSaving, isSaved }: ResultViewProp
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div className="flex flex-col gap-3">
           <h2 className="text-base font-bold text-stone-900">Standard recipe</h2>
-          <MacrosCard title="Macros (per serving)" macros={result.standard.macrosPerServing} />
+          <MacrosCard macros={result.standard.macrosPerServing} />
           <RecipeCard recipe={result.standard.recipe} />
         </div>
 
         <div className="flex flex-col gap-3">
           <h2 className="text-base font-bold text-stone-900">Upgraded recipe</h2>
-          <MacrosCard title="Macros (per serving)" macros={result.upgraded.macrosPerServing} />
+          <MacrosCard macros={result.upgraded.macrosPerServing} />
           <RecipeCard recipe={result.upgraded.recipe} />
         </div>
       </div>
