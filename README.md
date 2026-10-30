@@ -84,7 +84,7 @@ The API runs on **Render**, the website on **Cloudflare Pages**. Both are config
 
 ## Status
 
-Guest-mode recipe upgrade flow (generate a standard recipe → compute macros → rewrite to hit the goal → recompute macros) works end to end, verified against the real Nebius Token Factory / Nemotron models. Location/availability, Supabase auth, saved recipes, and some of the security hardening are still in progress — see PROJECT.md for the full plan and [SECURITY.md](./SECURITY.md) *(coming soon)* for the threat model.
+Guest-mode recipe upgrade flow (generate a standard recipe → compute macros → rewrite to hit the goal → recompute macros) works end to end, deployed and verified against the real Nebius Token Factory / Nemotron models. Location/availability, Supabase auth, and saved recipes are still in progress — see PROJECT.md for the full plan and [SECURITY.md](./SECURITY.md) for the threat model and what's actually built versus still a gap.
 
 ## Feedback
 
