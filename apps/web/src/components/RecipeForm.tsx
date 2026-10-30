@@ -1,7 +1,11 @@
 import { useState, type FormEvent } from "react";
-import type { GoalMode, UpgradeRequest } from "@recipeupgrader/shared";
+import type { GoalMode, LocationInput, UpgradeRequest } from "@recipeupgrader/shared";
 import { MAX_DISH_NAME_LENGTH } from "@recipeupgrader/shared";
 import { Button } from "./Button.js";
+
+function roundCoordinate(value: number): number {
+  return Math.round(value * 100) / 100;
+}
 
 interface RecipeFormProps {
   onSubmit: (request: UpgradeRequest) => void;
@@ -19,6 +23,39 @@ export function RecipeForm({ onSubmit, isSubmitting }: RecipeFormProps) {
   const [goalMode, setGoalMode] = useState<GoalMode>("maintaining");
   const [servings, setServings] = useState(1);
   const [formError, setFormError] = useState<string | null>(null);
+  const [location, setLocation] = useState<LocationInput | undefined>(undefined);
+  const [zipInput, setZipInput] = useState("");
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+
+  function handleUseMyLocation() {
+    setLocationError(null);
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          lat: roundCoordinate(position.coords.latitude),
+          lon: roundCoordinate(position.coords.longitude),
+        });
+        setZipInput("");
+        setIsLocating(false);
+      },
+      () => {
+        setLocationError("Couldn't get your location. Try a ZIP code instead.");
+        setIsLocating(false);
+      },
+    );
+  }
+
+  function handleZipChange(value: string) {
+    setZipInput(value);
+    setLocationError(null);
+    if (/^\d{5}$/.test(value)) {
+      setLocation({ zip: value });
+    } else if (value.length === 0) {
+      setLocation(undefined);
+    }
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -29,7 +66,7 @@ export function RecipeForm({ onSubmit, isSubmitting }: RecipeFormProps) {
     }
 
     setFormError(null);
-    onSubmit({ dishName, goalMode, servings });
+    onSubmit({ dishName, goalMode, servings, ...(location ? { location } : {}) });
   }
 
   return (
@@ -118,6 +155,41 @@ export function RecipeForm({ onSubmit, isSubmitting }: RecipeFormProps) {
             +
           </button>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <span className="text-sm font-semibold text-stone-800">
+          Nearby stores <span className="font-normal text-stone-400">(optional)</span>
+        </span>
+        <p className="text-xs text-stone-500">
+          Share a ZIP code or your location and the rewrite will prefer substitutes actually sold
+          nearby.
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="text"
+            inputMode="numeric"
+            placeholder="ZIP code"
+            value={zipInput}
+            disabled={isSubmitting}
+            onChange={(e) => handleZipChange(e.target.value.replace(/\D/g, "").slice(0, 5))}
+            className="w-28 rounded-lg border border-stone-300 p-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 disabled:bg-stone-50 disabled:text-stone-400"
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={isSubmitting || isLocating}
+            onClick={handleUseMyLocation}
+          >
+            {isLocating ? "Locating…" : "Use my location"}
+          </Button>
+          {location && (
+            <span className="text-xs font-medium text-emerald-700">
+              {"zip" in location ? `Using ZIP ${location.zip}` : "Using your current location"}
+            </span>
+          )}
+        </div>
+        {locationError && <p className="text-xs text-red-600">{locationError}</p>}
       </div>
 
       {formError && (
