@@ -69,7 +69,7 @@ describe("POST /api/upgrade", () => {
     expect(response.json().stores).toEqual([{ id: "1", name: "Test Grocery", lat: 40.71, lon: -74.0 }]);
   });
 
-  it("never looks up availability when no location is given", async () => {
+  it("never looks up availability when no location is given, and omits stores/availability entirely", async () => {
     app = await buildServer();
 
     const response = await app.inject({
@@ -81,6 +81,26 @@ describe("POST /api/upgrade", () => {
     expect(response.statusCode).toBe(200);
     expect(resolveAvailability).not.toHaveBeenCalled();
     expect(response.json().availability).toBeUndefined();
+    expect(response.json().stores).toBeUndefined();
+  });
+
+  it("returns empty arrays (not undefined) when a location is given but nothing is found", async () => {
+    resolveAvailability.mockResolvedValueOnce({ stores: [], availability: [] });
+    app = await buildServer();
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/upgrade",
+      payload: { dishName: "chicken and rice bowl", goalMode: "bulking", servings: 2, location: { zip: "00000" } },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = response.json();
+    // Distinguishable from "no location given" (which omits these fields
+    // entirely) - the frontend uses this to show "nothing found nearby"
+    // rather than showing nothing at all.
+    expect(body.stores).toEqual([]);
+    expect(body.availability).toEqual([]);
   });
 
   it("runs the full pipeline and returns validated standard/upgraded macros", async () => {

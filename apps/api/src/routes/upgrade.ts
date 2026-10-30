@@ -68,8 +68,13 @@ export function registerUpgradeRoute(app: FastifyInstance): void {
         upgraded: { recipe: upgradedRecipe, macrosPerServing: upgradedMacros },
         goalsMet,
         notes,
-        availability: availability.length > 0 ? availability : undefined,
-        stores: stores.length > 0 ? stores : undefined,
+        // Included (even as empty arrays) whenever a location was given, so
+        // the frontend can distinguish "no location shared" (omitted) from
+        // "shared, but nothing was found" (empty array) - otherwise a
+        // lookup failure looks identical to the user never sharing a
+        // location at all.
+        availability: location ? availability : undefined,
+        stores: location ? stores : undefined,
       });
 
       request.log.info({

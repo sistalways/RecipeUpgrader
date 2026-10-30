@@ -51,9 +51,14 @@ export function ResultView({ result, onSave, isSaving, isSaved }: ResultViewProp
         </div>
       </div>
 
-      {result.stores && result.stores.length > 0 && (
-        <NearbyStoresCard stores={result.stores} availability={result.availability} />
-      )}
+      {result.stores &&
+        (result.stores.length > 0 ? (
+          <NearbyStoresCard stores={result.stores} availability={result.availability} />
+        ) : (
+          <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-500">
+            Couldn't find any grocery stores near that location.
+          </div>
+        ))}
     </div>
   );
 }
