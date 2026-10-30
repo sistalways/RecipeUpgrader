@@ -31,9 +31,12 @@ vi.mock("../src/services/nutrition/computeMacros.js", () => ({
   })),
 }));
 
-const resolveAvailability = vi.fn(async () => [
-  { ingredient: "nonfat Greek yogurt", store: "Test Grocery", available: true, priceUsd: 4.99 },
-]);
+const resolveAvailability = vi.fn(async () => ({
+  stores: [{ id: "1", name: "Test Grocery", lat: 40.71, lon: -74.0 }],
+  availability: [
+    { ingredient: "nonfat Greek yogurt", store: "Test Grocery", available: true, priceUsd: 4.99 },
+  ],
+}));
 vi.mock("../src/services/location/resolveAvailability.js", () => ({
   resolveAvailability: (...args: unknown[]) => resolveAvailability(...args),
 }));
@@ -63,6 +66,7 @@ describe("POST /api/upgrade", () => {
     expect(response.json().availability).toEqual([
       { ingredient: "nonfat Greek yogurt", store: "Test Grocery", available: true, priceUsd: 4.99 },
     ]);
+    expect(response.json().stores).toEqual([{ id: "1", name: "Test Grocery", lat: 40.71, lon: -74.0 }]);
   });
 
   it("never looks up availability when no location is given", async () => {

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MAX_DISH_NAME_LENGTH, StandardRecipeSchema, UpgradedRecipeSchema } from "./recipe.js";
-import { AvailabilitySchema, LocationInputSchema } from "./location.js";
+import { AvailabilitySchema, LocationInputSchema, StoreSchema } from "./location.js";
 import { MacrosSchema } from "./macros.js";
 
 /**
@@ -61,6 +61,8 @@ export const UpgradeResponseSchema = z
     /** Set when goalsMet is false, or when location/availability data was unavailable. Plain text only. */
     notes: z.string().max(1_000).optional(),
     availability: z.array(AvailabilitySchema).max(200).optional(),
+    /** Nearby grocery stores (if a location was given and any were found), nearest first. */
+    stores: z.array(StoreSchema).max(10).optional(),
   })
   .strict();
 

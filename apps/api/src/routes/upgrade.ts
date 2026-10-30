@@ -41,7 +41,9 @@ export function registerUpgradeRoute(app: FastifyInstance): void {
       const { macrosPerServing: standardMacros, unmatchedIngredients: standardUnmatched } =
         await computeMacros(standardRecipe.ingredients, standardRecipe.servings);
 
-      const availability = location ? await resolveAvailability(location) : [];
+      const { stores, availability } = location
+        ? await resolveAvailability(location)
+        : { stores: [], availability: [] };
 
       const upgradedRecipe = await rewriteRecipe({
         original: standardRecipe,
@@ -67,6 +69,7 @@ export function registerUpgradeRoute(app: FastifyInstance): void {
         goalsMet,
         notes,
         availability: availability.length > 0 ? availability : undefined,
+        stores: stores.length > 0 ? stores : undefined,
       });
 
       request.log.info({
@@ -76,6 +79,7 @@ export function registerUpgradeRoute(app: FastifyInstance): void {
         goalsMet,
         unmatchedCount: unmatched.length,
         locationGiven: Boolean(location),
+        storeCount: stores.length,
         availabilityCount: availability.length,
       });
 

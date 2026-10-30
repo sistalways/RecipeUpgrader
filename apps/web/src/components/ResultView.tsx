@@ -1,6 +1,7 @@
 import type { UpgradeResponse } from "@recipeupgrader/shared";
 import { Button } from "./Button.js";
 import { MacrosCard } from "./MacrosCard.js";
+import { NearbyStoresCard } from "./NearbyStoresCard.js";
 import { RecipeCard } from "./RecipeCard.js";
 
 interface ResultViewProps {
@@ -50,24 +51,8 @@ export function ResultView({ result, onSave, isSaving, isSaved }: ResultViewProp
         </div>
       </div>
 
-      {result.availability && result.availability.some((a) => a.available) && (
-        <div className="rounded-xl border border-stone-200 bg-white p-4">
-          <h3 className="mb-2 text-sm font-bold text-stone-900">Available near you</h3>
-          <ul className="flex flex-col gap-1.5 text-sm text-stone-700">
-            {result.availability
-              .filter((a) => a.available)
-              .map((a) => (
-                <li key={`${a.store}-${a.ingredient}`} className="flex items-center justify-between">
-                  <span>
-                    {a.ingredient} <span className="text-stone-400">at {a.store}</span>
-                  </span>
-                  {a.priceUsd !== undefined && (
-                    <span className="font-semibold text-stone-800">${a.priceUsd.toFixed(2)}</span>
-                  )}
-                </li>
-              ))}
-          </ul>
-        </div>
+      {result.stores && result.stores.length > 0 && (
+        <NearbyStoresCard stores={result.stores} availability={result.availability} />
       )}
     </div>
   );
