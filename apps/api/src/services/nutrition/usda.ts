@@ -54,10 +54,43 @@ function extractMacrosPer100g(food: z.infer<typeof UsdaFoodSchema>): Macros {
   };
 }
 
+async function requestOnce(name: string): Promise<UsdaFoodMatch | null> {
+  const url = new URL(USDA_SEARCH_URL);
+  url.searchParams.set("api_key", env.USDA_API_KEY);
+  url.searchParams.set("query", name);
+  url.searchParams.set("pageSize", "5");
+  url.searchParams.set("dataType", "Foundation,SR Legacy");
+
+  const response = await fetch(url, { signal: AbortSignal.timeout(USDA_TIMEOUT_MS) });
+  if (!response.ok) {
+    throw new Error(`USDA returned ${response.status}`);
+  }
+
+  const body: unknown = await response.json();
+  const parsed = UsdaSearchResponseSchema.safeParse(body);
+  if (!parsed.success) {
+    throw new Error("USDA response was malformed");
+  }
+
+  const bestMatch = parsed.data.foods[0];
+  return bestMatch
+    ? {
+        fdcId: bestMatch.fdcId,
+        description: bestMatch.description,
+        macrosPer100g: extractMacrosPer100g(bestMatch),
+      }
+    : null;
+}
+
 /**
  * Looks up the best USDA match for an ingredient name and returns its
  * macros per 100g. Returns null if nothing matched (caller decides how to
  * degrade — see computeMacros.ts). Cached in-memory per process.
+ *
+ * Retries once on failure (network error, non-OK response, or malformed
+ * body) before giving up, since USDA's public API occasionally has a
+ * transient blip — the same "retry once, then fail" pattern used for
+ * model calls in services/llm/callModel.ts.
  */
 export async function searchUsdaFood(name: string): Promise<UsdaFoodMatch | null> {
   const cacheKey = name.trim().toLowerCase();
@@ -65,37 +98,16 @@ export async function searchUsdaFood(name: string): Promise<UsdaFoodMatch | null
     return searchCache.get(cacheKey) ?? null;
   }
 
-  const url = new URL(USDA_SEARCH_URL);
-  url.searchParams.set("api_key", env.USDA_API_KEY);
-  url.searchParams.set("query", name);
-  url.searchParams.set("pageSize", "5");
-  url.searchParams.set("dataType", "Foundation,SR Legacy");
-
-  let response: Response;
+  let match: UsdaFoodMatch | null;
   try {
-    response = await fetch(url, { signal: AbortSignal.timeout(USDA_TIMEOUT_MS) });
+    match = await requestOnce(name);
   } catch {
-    throw new UpstreamError("USDA lookup failed");
+    try {
+      match = await requestOnce(name);
+    } catch {
+      throw new UpstreamError("USDA lookup failed");
+    }
   }
-
-  if (!response.ok) {
-    throw new UpstreamError("USDA lookup failed");
-  }
-
-  const body: unknown = await response.json();
-  const parsed = UsdaSearchResponseSchema.safeParse(body);
-  if (!parsed.success) {
-    throw new UpstreamError("USDA response was malformed");
-  }
-
-  const bestMatch = parsed.data.foods[0];
-  const match: UsdaFoodMatch | null = bestMatch
-    ? {
-        fdcId: bestMatch.fdcId,
-        description: bestMatch.description,
-        macrosPer100g: extractMacrosPer100g(bestMatch),
-      }
-    : null;
 
   searchCache.set(cacheKey, match);
   return match;
