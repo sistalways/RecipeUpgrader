@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "./Button.js";
 import { useAuth } from "../hooks/useAuth.js";
 
@@ -7,6 +7,39 @@ const FEATURES = [
   "Rewrites your dish, keeps it recognizable",
   "No signup needed to try it",
 ];
+
+const REDIRECT_ERROR_MESSAGES: Record<string, string> = {
+  otp_expired: "That confirmation link has expired. Sign up again to get a new one.",
+  access_denied: "That confirmation link is no longer valid. Sign up again to get a new one.",
+};
+
+/**
+ * Supabase redirects back here with the error in the URL hash
+ * (#error=...&error_code=...&error_description=...) when a confirmation
+ * or magic link is invalid or expired, rather than failing on Supabase's
+ * own domain. Reads it once, then strips it from the URL so a reload
+ * doesn't keep re-showing it.
+ */
+function readAndClearRedirectError(): string | null {
+  if (typeof window === "undefined" || !window.location.hash) {
+    return null;
+  }
+
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  const errorCode = params.get("error_code");
+  const description = params.get("error_description");
+  if (!errorCode && !description) {
+    return null;
+  }
+
+  window.history.replaceState(null, "", window.location.pathname + window.location.search);
+
+  return (
+    (errorCode && REDIRECT_ERROR_MESSAGES[errorCode]) ??
+    description?.replace(/\+/g, " ") ??
+    "That link is no longer valid. Please try again."
+  );
+}
 
 /**
  * The entry screen: the product pitch plus sign in, sign up, or continue
@@ -21,10 +54,20 @@ export function AuthGate({ onContinueAsGuest }: { onContinueAsGuest: () => void 
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState<string | null>(null);
+  const [redirectError, setRedirectError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const message = readAndClearRedirectError();
+    if (message) {
+      setRedirectError(message);
+      setMode("signUp");
+    }
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setConfirmationMessage(null);
+    setRedirectError(null);
     setIsSubmitting(true);
     try {
       if (mode === "signIn") {
@@ -120,6 +163,11 @@ export function AuthGate({ onContinueAsGuest }: { onContinueAsGuest: () => void 
             {confirmationMessage && (
               <p className="text-sm text-emerald-700" role="status">
                 {confirmationMessage}
+              </p>
+            )}
+            {redirectError && (
+              <p className="text-sm text-amber-700" role="alert">
+                {redirectError}
               </p>
             )}
           </form>
