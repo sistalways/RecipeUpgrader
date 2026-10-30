@@ -41,6 +41,8 @@ Every route is rate-limited by IP (100 requests / 10 minutes); `POST /api/upgrad
 ### HTTP hardening
 `@fastify/helmet` sets standard security headers (CSP, `X-Content-Type-Options`, `X-Frame-Options`, HSTS, etc.) on every API response. CORS is an explicit allowlist (`ALLOWED_ORIGINS`) — never a wildcard.
 
+The deployed website carries its own CSP too, separate from the API's: `apps/web/public/_headers` (copied into the build output and read directly by Cloudflare Pages) sets a strict policy — `script-src 'self'` and `style-src 'self'` with no `'unsafe-inline'`, since the production build has no inline scripts or styles to accommodate, plus `connect-src` scoped to the site's own origin and the live API.
+
 ### Error handling and logging
 A small set of typed errors (`ValidationError`, `UpstreamError`, `RateLimitError`, `AuthError`, `NotFoundError`) map to safe, generic JSON responses. Stack traces, raw upstream errors, prompts, and failed model output never reach the client. Logs are structured JSON and never include API keys, auth tokens, full user input at volume, raw prompts, or precise location data.
 
@@ -52,7 +54,6 @@ Dependabot and CodeQL run on every push. All 21 vulnerabilities flagged since th
 Being direct about what isn't done, rather than implying more coverage than exists:
 
 - **No authentication is wired into the running app yet.** A Supabase project and a `saved_recipes` table (with row-level security policies restricting rows to their owner) exist, set up directly in Supabase's dashboard — but no backend code verifies a JWT or exposes any auth-gated route. Every request today is effectively a guest request, which happens to match the hackathon's requirement that the app work without logging in, but it's a gap, not a feature.
-- **The deployed website has no explicit CSP header of its own.** Helmet's CSP is applied by the API, which only ever returns JSON — it doesn't cover the separately-hosted static site on Cloudflare Pages. The frontend's actual XSS protection today is structural: model output is always rendered as plain text (no `dangerouslySetInnerHTML` anywhere in the codebase), not an explicit header-level policy. A `_headers` file for Cloudflare Pages would close this gap and hasn't been added yet.
 - **Location/Tavily/Kroger don't exist in the code**, so the specific defenses PROJECT.md describes for them (rounding coordinates to ~1km, condensing raw web results into structured facts before they reach a prompt) are a design, not something tested or exercised yet.
 - **Rate limiting is IP-only.** There's no per-user tier, because there's no concept of a logged-in user yet.
 
