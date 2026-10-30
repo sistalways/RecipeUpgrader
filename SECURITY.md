@@ -63,6 +63,7 @@ Dependabot and CodeQL run on every push. All 21 vulnerabilities flagged since th
 Being direct about what isn't done, rather than implying more coverage than exists:
 
 - **Kroger is not implemented.** Only Tavily is used for availability checking; store-level product data from Kroger's own API was cut from scope.
+- **The free OpenStreetMap Overpass instance (`overpass-api.de`) appears to reject requests from server/datacenter network contexts** (observed both from this session's sandbox and from the deployed Render service: a plain, valid query gets `406 Not Acceptable`, inconsistently, even with an honest identifying User-Agent). This isn't a bug in how we build or send the request — it's a third-party access restriction on the free public instance. The code already degrades correctly (no stores found → the feature is just silently skipped, never an error), so nothing breaks, but it means the nearby-stores feature may not reliably return results in production right now. A paid or self-hosted Overpass instance, or an alternate mirror, would likely fix this.
 - **The location/availability cache is in-memory, not Supabase-backed.** PROJECT.md calls for a persistent cache with a TTL; what exists today is a per-process in-memory cache (same tradeoff already accepted for USDA lookups) that resets on every deploy and isn't shared across server instances.
 - **Rate limiting is IP-only**, even for signed-in users. There's no separate per-user tier.
 

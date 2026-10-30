@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { StoreSchema, type Store } from "@recipeupgrader/shared";
 import { UpstreamError } from "../../lib/errors.js";
+import { logger } from "../../lib/logger.js";
 import { TtlCache } from "../cache/ttlCache.js";
 import { haversineDistanceKm } from "./distance.js";
 
@@ -42,15 +43,25 @@ export async function findNearbyStores(lat: number, lon: number): Promise<Store[
   try {
     response = await fetch(OVERPASS_URL, {
       method: "POST",
-      headers: { "Content-Type": "text/plain" },
+      headers: {
+        "Content-Type": "text/plain",
+        // OSM's usage policy asks API consumers to identify themselves
+        // honestly rather than impersonate a browser.
+        "User-Agent": "RecipeUpgrader/1.0 (hackathon project)",
+      },
       body: query,
       signal: AbortSignal.timeout(OVERPASS_TIMEOUT_MS),
     });
-  } catch {
+  } catch (error) {
+    logger.warn({ task: "findNearbyStores", outcome: "network_error", error: String(error) });
     throw new UpstreamError("Nearby store lookup failed");
   }
 
   if (!response.ok) {
+    // Logged (status only, no coordinates) so a persistent block from the
+    // upstream service is visible without surfacing as a user-facing error
+    // - PROJECT.md: "Location failure or absence is never an error."
+    logger.warn({ task: "findNearbyStores", outcome: "upstream_error", status: response.status });
     throw new UpstreamError("Nearby store lookup failed");
   }
 
