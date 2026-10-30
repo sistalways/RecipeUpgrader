@@ -94,14 +94,14 @@ export function AuthGate({ onContinueAsGuest }: { onContinueAsGuest: () => void 
           <h1 className="text-4xl font-extrabold tracking-tight text-stone-900 sm:text-5xl">
             Recipe<span className="text-emerald-600">Upgrader</span>
           </h1>
-          <p className="text-xl font-semibold text-stone-700">Eat what you love. Hit your macros anyway.</p>
+          <p className="text-xl font-semibold text-stone-700">Upgrade your recipe, not your willpower.</p>
           <p className="text-base leading-relaxed text-stone-600">
-            Most "high-protein" recipes online lie about their own numbers - we went looking for a
-            better cheesecake and got burned every time. RecipeUpgrader rewrites any dish you crave into
-            a version that actually fits your goals, with every gram of protein and every calorie backed
-            by real nutrition data, not an AI's guess. Cutting, bulking, or just maintaining - wherever
-            you are in your fitness journey, you shouldn't have to choose between your goals and the food
-            you actually want to eat.
+            Sticking to a diet usually means giving up the food you actually want. RecipeUpgrader
+            rewrites any dish you crave into a version that fits your goals, with every gram of protein
+            and every calorie backed by real nutrition data, not an AI's guess. Most "high-protein"
+            recipes online lie about their own numbers - we went looking for a better cheesecake and got
+            burned every time. Cutting, bulking, or just maintaining, the recipe changes so you don't
+            have to.
           </p>
           <ul className="flex flex-col gap-2 self-center text-left text-sm text-stone-600 lg:self-start">
             {FEATURES.map((feature) => (
