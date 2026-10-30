@@ -37,3 +37,11 @@ jobs:
           MODEL_FAST: ci-fast-model
           MODEL_REASONING: ci-reasoning-model
           USDA_API_KEY: ci-test-key
+
+      - name: Install Playwright's browser
+        run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+
+      - name: E2E smoke test
+        run: pnpm run test:e2e
+        working-directory: apps/web

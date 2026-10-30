@@ -63,7 +63,7 @@ Model IDs live **only** in env vars, never hardcoded. Every model call goes thro
 3. `goalModeToGoals()` → pure function, no I/O → resolves `goalMode` + `servings` into a `Goals` (calories/serving, min protein/serving). Returned in the response so the user can see what target was actually applied.
 4. `generateBaseRecipe()` → fast model generates a standard, typical recipe for `dishName` at the requested servings → validate with `StandardRecipeSchema` → retry once on validation failure → 502 if still invalid.
 5. `computeMacros()` → USDA lookups (cached) → pure TypeScript math. Run once for the standard recipe.
-6. If location given: `findNearbyStores()` → `checkAvailability()` (Tavily, plus Kroger where applicable) → cached in Supabase with a TTL.
+6. If location given: `findNearbyStores()` (OpenStreetMap Overpass) → `checkAvailability()` (Tavily, checked against a curated list of common substitute ingredients) → cached in-memory with a TTL (Supabase-backed caching, like the USDA cache, is future work - see section 3). Kroger is not implemented.
 7. `rewriteRecipe()` → reasoning model, with resolved goals, standard-recipe macros, and the availability list → validate with `UpgradedRecipeSchema` → retry once → 502 if still invalid.
 8. Recompute macros of the upgraded recipe **in code** and return them alongside the model's output. If they miss the goals, say so in the response; never fake it.
 9. Log latency, model, token usage, and cache hits (no dish name beyond what's needed for debugging volume, no PII).
@@ -113,8 +113,8 @@ recipeupgrader/
 │   │   │   │   │   └── prompts/        # prompt templates as TS functions, one file per task
 │   │   │   │   ├── recipe/             # generateBaseRecipe, rewriteRecipe, goalPresets
 │   │   │   │   ├── nutrition/          # USDA lookup + computeMacros (pure functions)
-│   │   │   │   ├── location/           # findNearbyStores (Overpass), checkAvailability (Tavily, Kroger)
-│   │   │   │   └── cache/              # Supabase-backed cache with TTL
+│   │   │   │   ├── location/           # findNearbyStores (Overpass), checkAvailability (Tavily) - Kroger not implemented
+│   │   │   │   └── cache/              # in-memory TTL cache (Supabase-backed cache is future work)
 │   │   │   ├── security/
 │   │   │   │   ├── sanitize.ts         # cleaning untrusted text before it enters prompts
 │   │   │   │   └── auth.ts             # verify Supabase JWT, attach user to request
@@ -253,7 +253,7 @@ Rules:
 ### 6.5 Abuse and cost protection
 - Rate limiting on all `/api/*` routes, stricter on `/api/upgrade` (e.g. guests: 10 per 10 minutes per IP).
 - Timeouts on every external call (e.g. LLM 60s, others 10s).
-- Cap the number of Tavily queries per request (e.g. 8) and cache results in Supabase with a TTL (e.g. 24 hours).
+- Cap the number of Tavily queries per request (e.g. 8) and cache results with a TTL (e.g. 24 hours) - currently in-memory per process, not yet Supabase-backed (same stand-in already used for USDA lookups).
 - Cache USDA lookups (they rarely change).
 
 ### 6.6 HTTP hardening
