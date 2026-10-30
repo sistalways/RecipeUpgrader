@@ -25,9 +25,17 @@ export function useAuth() {
       return;
     }
 
-    supabase.auth.getSession().then(({ data }) => {
-      setState({ session: data.session, isLoading: false });
-    });
+    // If this fails (network/CORS issue reaching Supabase), fall back to
+    // "signed out" rather than hanging in "loading" forever — the guest
+    // flow must keep working either way.
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        setState({ session: data.session, isLoading: false });
+      })
+      .catch(() => {
+        setState({ session: null, isLoading: false });
+      });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
       setState({ session, isLoading: false });
