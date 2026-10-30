@@ -31,6 +31,13 @@ vi.mock("../src/services/nutrition/computeMacros.js", () => ({
   })),
 }));
 
+const resolveAvailability = vi.fn(async () => [
+  { ingredient: "nonfat Greek yogurt", store: "Test Grocery", available: true, priceUsd: 4.99 },
+]);
+vi.mock("../src/services/location/resolveAvailability.js", () => ({
+  resolveAvailability: (...args: unknown[]) => resolveAvailability(...args),
+}));
+
 // Imported after the mocks above so the route picks up the mocked modules.
 const { buildServer } = await import("../src/server.js");
 
@@ -39,6 +46,37 @@ describe("POST /api/upgrade", () => {
 
   afterEach(async () => {
     await app?.close();
+    resolveAvailability.mockClear();
+  });
+
+  it("looks up availability when a location is given, and includes it in the response", async () => {
+    app = await buildServer();
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/upgrade",
+      payload: { dishName: "chicken and rice bowl", goalMode: "bulking", servings: 2, location: { zip: "10001" } },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(resolveAvailability).toHaveBeenCalledWith({ zip: "10001" });
+    expect(response.json().availability).toEqual([
+      { ingredient: "nonfat Greek yogurt", store: "Test Grocery", available: true, priceUsd: 4.99 },
+    ]);
+  });
+
+  it("never looks up availability when no location is given", async () => {
+    app = await buildServer();
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/upgrade",
+      payload: { dishName: "chicken and rice bowl", goalMode: "bulking", servings: 2 },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(resolveAvailability).not.toHaveBeenCalled();
+    expect(response.json().availability).toBeUndefined();
   });
 
   it("runs the full pipeline and returns validated standard/upgraded macros", async () => {

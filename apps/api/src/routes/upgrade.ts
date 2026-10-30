@@ -3,6 +3,7 @@ import { UpgradeRequestSchema, UpgradeResponseSchema } from "@recipeupgrader/sha
 import { ValidationError } from "../lib/errors.js";
 import { computeMacros } from "../services/nutrition/computeMacros.js";
 import { meetsGoals } from "../services/nutrition/macroMath.js";
+import { resolveAvailability } from "../services/location/resolveAvailability.js";
 import { generateBaseRecipe } from "../services/recipe/generateBaseRecipe.js";
 import { goalModeToGoals } from "../services/recipe/goalPresets.js";
 import { rewriteRecipe } from "../services/recipe/rewriteRecipe.js";
@@ -10,15 +11,9 @@ import { rewriteRecipe } from "../services/recipe/rewriteRecipe.js";
 /**
  * POST /api/upgrade - the main pipeline (PROJECT.md section 2):
  * validate → resolve goals from goal mode → generate a standard recipe for
- * the dish name → compute its macros → (location: not yet wired, see
- * below) → rewrite → recompute macros → respond. Route stays thin; all
- * logic lives in services/.
- *
- * Location/availability (steps 6–7 of the lifecycle) are not implemented
- * yet - that is tomorrow's work per the project plan. Per PROJECT.md,
- * "Location failure or absence is never an error", so for now we always
- * fall back to a plain rewrite with no availability data, which is a valid
- * instance of that fallback path, not a shortcut around it.
+ * the dish name → compute its macros → (if location given) find nearby
+ * availability → rewrite → recompute macros → respond. Route stays thin;
+ * all logic lives in services/.
  */
 export function registerUpgradeRoute(app: FastifyInstance): void {
   app.post(
@@ -36,7 +31,7 @@ export function registerUpgradeRoute(app: FastifyInstance): void {
       if (!parsedBody.success) {
         throw new ValidationError("Request body did not match the expected shape");
       }
-      const { dishName, goalMode, servings } = parsedBody.data;
+      const { dishName, goalMode, servings, location } = parsedBody.data;
 
       const startedAt = Date.now();
 
@@ -46,11 +41,13 @@ export function registerUpgradeRoute(app: FastifyInstance): void {
       const { macrosPerServing: standardMacros, unmatchedIngredients: standardUnmatched } =
         await computeMacros(standardRecipe.ingredients, standardRecipe.servings);
 
+      const availability = location ? await resolveAvailability(location) : [];
+
       const upgradedRecipe = await rewriteRecipe({
         original: standardRecipe,
         originalMacros: standardMacros,
         goals,
-        availability: [],
+        availability,
       });
       const { macrosPerServing: upgradedMacros, unmatchedIngredients: upgradedUnmatched } =
         await computeMacros(upgradedRecipe.ingredients, upgradedRecipe.servings);
@@ -69,6 +66,7 @@ export function registerUpgradeRoute(app: FastifyInstance): void {
         upgraded: { recipe: upgradedRecipe, macrosPerServing: upgradedMacros },
         goalsMet,
         notes,
+        availability: availability.length > 0 ? availability : undefined,
       });
 
       request.log.info({
@@ -77,6 +75,8 @@ export function registerUpgradeRoute(app: FastifyInstance): void {
         latencyMs: Date.now() - startedAt,
         goalsMet,
         unmatchedCount: unmatched.length,
+        locationGiven: Boolean(location),
+        availabilityCount: availability.length,
       });
 
       return reply.send(response);
