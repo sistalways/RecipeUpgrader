@@ -17,7 +17,7 @@ const GOAL_MODES: { value: GoalMode; label: string; description: string }[] = [
 export function RecipeForm({ onSubmit, isSubmitting }: RecipeFormProps) {
   const [dishName, setDishName] = useState("");
   const [goalMode, setGoalMode] = useState<GoalMode>("maintaining");
-  const [servings, setServings] = useState(2);
+  const [servings, setServings] = useState(1);
   const [formError, setFormError] = useState<string | null>(null);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -45,17 +45,23 @@ export function RecipeForm({ onSubmit, isSubmitting }: RecipeFormProps) {
           onChange={(e) => setDishName(e.target.value)}
           maxLength={MAX_DISH_NAME_LENGTH}
           placeholder="e.g. cheesecake"
-          className="rounded-lg border border-stone-300 p-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          disabled={isSubmitting}
+          className="rounded-lg border border-stone-300 p-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 disabled:bg-stone-50 disabled:text-stone-400"
         />
       </label>
 
-      <fieldset className="flex flex-col gap-2">
+      <fieldset
+        disabled={isSubmitting}
+        className={`flex flex-col gap-2 ${isSubmitting ? "opacity-60" : ""}`}
+      >
         <legend className="mb-1 text-sm font-semibold text-stone-800">Goal</legend>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           {GOAL_MODES.map((mode) => (
             <label
               key={mode.value}
-              className={`flex cursor-pointer flex-col gap-0.5 rounded-xl border-2 p-3 text-sm transition-colors ${
+              className={`flex flex-col gap-0.5 rounded-xl border-2 p-3 text-sm transition-colors ${
+                isSubmitting ? "cursor-not-allowed" : "cursor-pointer"
+              } ${
                 goalMode === mode.value
                   ? "border-emerald-500 bg-emerald-50"
                   : "border-stone-200 hover:border-stone-300"
@@ -78,17 +84,41 @@ export function RecipeForm({ onSubmit, isSubmitting }: RecipeFormProps) {
         </div>
       </fieldset>
 
-      <label className="flex max-w-[10rem] flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5">
         <span className="text-sm font-semibold text-stone-800">Servings</span>
-        <input
-          type="number"
-          min={1}
-          max={100}
-          value={servings}
-          onChange={(e) => setServings(Number(e.target.value))}
-          className="rounded-lg border border-stone-300 p-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
-        />
-      </label>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            disabled={isSubmitting || servings <= 1}
+            onClick={() => setServings((s) => Math.max(1, s - 1))}
+            aria-label="Decrease servings"
+            className="flex h-9 w-9 flex-none items-center justify-center rounded-lg border border-stone-300 text-lg font-semibold text-stone-700 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            −
+          </button>
+          <input
+            type="number"
+            min={1}
+            max={100}
+            value={servings}
+            disabled={isSubmitting}
+            onChange={(e) => {
+              const parsed = Number(e.target.value);
+              setServings(Number.isFinite(parsed) ? Math.min(100, Math.max(1, parsed)) : 1);
+            }}
+            className="w-16 rounded-lg border border-stone-300 p-2.5 text-center text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 disabled:bg-stone-50 disabled:text-stone-400"
+          />
+          <button
+            type="button"
+            disabled={isSubmitting || servings >= 100}
+            onClick={() => setServings((s) => Math.min(100, s + 1))}
+            aria-label="Increase servings"
+            className="flex h-9 w-9 flex-none items-center justify-center rounded-lg border border-stone-300 text-lg font-semibold text-stone-700 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            +
+          </button>
+        </div>
+      </div>
 
       {formError && (
         <p className="text-sm text-red-600" role="alert">
