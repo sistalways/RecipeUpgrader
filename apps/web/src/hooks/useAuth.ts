@@ -51,11 +51,18 @@ export function useAuth() {
     if (error) setAuthError(error.message);
   }, []);
 
-  const signUp = useCallback(async (email: string, password: string) => {
-    if (!supabase) return;
+  /** Returns whether email confirmation is required before the account can sign in. */
+  const signUp = useCallback(async (email: string, password: string): Promise<{ needsConfirmation: boolean }> => {
+    if (!supabase) return { needsConfirmation: false };
     setAuthError(null);
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) setAuthError(error.message);
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      setAuthError(error.message);
+      return { needsConfirmation: false };
+    }
+    // Supabase returns no session (but no error) when the project requires
+    // email confirmation before a new account can sign in.
+    return { needsConfirmation: !data.session };
   }, []);
 
   const signOut = useCallback(async () => {
