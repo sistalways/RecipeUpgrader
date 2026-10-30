@@ -9,7 +9,7 @@ import { useAuth } from "../hooks/useAuth.js";
 import { useSaveRecipe } from "../hooks/useSavedRecipes.js";
 import { useUpgradeRecipe } from "../hooks/useUpgradeRecipe.js";
 
-export function HomePage() {
+export function HomePage({ onSignInClick }: { onSignInClick: () => void }) {
   const { mutate, data, isPending, isError, error, reset } = useUpgradeRecipe();
   const [lastRequest, setLastRequest] = useState<UpgradeRequest | null>(null);
 
@@ -33,7 +33,7 @@ export function HomePage() {
             Name a dish, pick your goal, and get a recipe that fits — no login required.
           </p>
         </div>
-        <AuthPanel />
+        <AuthPanel onSignInClick={onSignInClick} />
       </header>
 
       <RecipeForm onSubmit={handleSubmit} isSubmitting={isPending} />

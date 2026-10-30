@@ -19,6 +19,7 @@ export function useAuth() {
     isLoading: supabase !== null,
   });
   const [authError, setAuthError] = useState<string | null>(null);
+  const [authNotice, setAuthNotice] = useState<string | null>(null);
 
   useEffect(() => {
     if (!supabase) {
@@ -47,6 +48,7 @@ export function useAuth() {
   const signIn = useCallback(async (email: string, password: string) => {
     if (!supabase) return;
     setAuthError(null);
+    setAuthNotice(null);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) setAuthError(error.message);
   }, []);
@@ -54,8 +56,14 @@ export function useAuth() {
   const signUp = useCallback(async (email: string, password: string) => {
     if (!supabase) return;
     setAuthError(null);
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) setAuthError(error.message);
+    setAuthNotice(null);
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      setAuthError(error.message);
+    } else if (!data.session) {
+      // Email confirmation is on: no session until they click the link.
+      setAuthNotice("Check your email to confirm your account, then sign in.");
+    }
   }, []);
 
   const signOut = useCallback(async () => {
@@ -68,6 +76,7 @@ export function useAuth() {
     session: state.session,
     isLoading: state.isLoading,
     authError,
+    authNotice,
     signIn,
     signUp,
     signOut,
