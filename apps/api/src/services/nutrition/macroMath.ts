@@ -47,7 +47,7 @@ export function macrosPerServing(total: Macros, servings: number): Macros {
 /**
  * Whether a per-serving macro result hits the user's goals: calories at or
  * under a small tolerance above the target, protein at or above the
- * minimum. Used to decide the response's `goalsMet` flag — never faked
+ * minimum. Used to decide the response's `goalsMet` flag - never faked
  * (PROJECT.md section 2 step 7).
  */
 export function meetsGoals(macros: Macros, goals: Goals): boolean {

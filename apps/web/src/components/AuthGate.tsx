@@ -3,7 +3,7 @@ import { Button } from "./Button.js";
 import { useAuth } from "../hooks/useAuth.js";
 
 const FEATURES = [
-  "Real USDA nutrition data — never an AI's guess",
+  "Real USDA nutrition data - never an AI's guess",
   "Rewrites your dish, keeps it recognizable",
   "No signup needed to try it",
 ];
@@ -11,7 +11,7 @@ const FEATURES = [
 /**
  * The entry screen: the product pitch plus sign in, sign up, or continue
  * as a guest. Shown only when login is configured and there's no active
- * session yet — once either path succeeds, App.tsx stops rendering this
+ * session yet - once either path succeeds, App.tsx stops rendering this
  * and shows the tool.
  */
 export function AuthGate({ onContinueAsGuest }: { onContinueAsGuest: () => void }) {
@@ -53,10 +53,10 @@ export function AuthGate({ onContinueAsGuest }: { onContinueAsGuest: () => void 
           </h1>
           <p className="text-xl font-semibold text-stone-700">Eat what you love. Hit your macros anyway.</p>
           <p className="text-base leading-relaxed text-stone-600">
-            Most "high-protein" recipes online lie about their own numbers — we went looking for a
+            Most "high-protein" recipes online lie about their own numbers - we went looking for a
             better cheesecake and got burned every time. RecipeUpgrader rewrites any dish you crave into
             a version that actually fits your goals, with every gram of protein and every calorie backed
-            by real nutrition data, not an AI's guess. Cutting, bulking, or just maintaining — wherever
+            by real nutrition data, not an AI's guess. Cutting, bulking, or just maintaining - wherever
             you are in your fitness journey, you shouldn't have to choose between your goals and the food
             you actually want to eat.
           </p>

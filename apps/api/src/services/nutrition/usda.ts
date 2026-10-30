@@ -85,11 +85,11 @@ async function requestOnce(name: string): Promise<UsdaFoodMatch | null> {
 /**
  * Looks up the best USDA match for an ingredient name and returns its
  * macros per 100g. Returns null if nothing matched (caller decides how to
- * degrade — see computeMacros.ts). Cached in-memory per process.
+ * degrade - see computeMacros.ts). Cached in-memory per process.
  *
  * Retries once on failure (network error, non-OK response, or malformed
  * body) before giving up, since USDA's public API occasionally has a
- * transient blip — the same "retry once, then fail" pattern used for
+ * transient blip - the same "retry once, then fail" pattern used for
  * model calls in services/llm/callModel.ts.
  */
 export async function searchUsdaFood(name: string): Promise<UsdaFoodMatch | null> {

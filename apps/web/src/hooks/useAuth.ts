@@ -11,7 +11,7 @@ interface AuthState {
 /**
  * Tracks the current Supabase session, if login is configured at all. When
  * it isn't (supabase is null), this just reports "signed out, not loading"
- * forever — the rest of the UI treats that the same as a guest who hasn't
+ * forever - the rest of the UI treats that the same as a guest who hasn't
  * signed in.
  */
 export function useAuth() {
@@ -27,7 +27,7 @@ export function useAuth() {
     }
 
     // If this fails (network/CORS issue reaching Supabase), fall back to
-    // "signed out" rather than hanging in "loading" forever — the guest
+    // "signed out" rather than hanging in "loading" forever - the guest
     // flow must keep working either way.
     supabase.auth
       .getSession()

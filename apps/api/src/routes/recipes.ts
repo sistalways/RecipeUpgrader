@@ -8,7 +8,7 @@ import { deleteSavedRecipe, listSavedRecipes, saveRecipe } from "../services/rec
 const IdParamsSchema = z.object({ id: z.string().uuid() }).strict();
 
 /**
- * Saved-recipe routes. All three require auth — guests never reach these
+ * Saved-recipe routes. All three require auth - guests never reach these
  * (guest mode works entirely through /api/upgrade, no account needed).
  */
 export function registerRecipesRoute(app: FastifyInstance): void {

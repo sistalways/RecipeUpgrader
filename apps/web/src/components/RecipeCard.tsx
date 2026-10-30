@@ -2,7 +2,7 @@ import type { StandardRecipe, UpgradedRecipe } from "@recipeupgrader/shared";
 
 /**
  * Renders a standard or upgraded recipe as plain text only. Model output
- * is data, never markup — no dangerouslySetInnerHTML, no markdown-with-HTML
+ * is data, never markup - no dangerouslySetInnerHTML, no markdown-with-HTML
  * rendering (PROJECT.md section 6.3).
  */
 export function RecipeCard({ recipe }: { recipe: StandardRecipe | UpgradedRecipe }) {

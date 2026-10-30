@@ -8,14 +8,14 @@ import { goalModeToGoals } from "../services/recipe/goalPresets.js";
 import { rewriteRecipe } from "../services/recipe/rewriteRecipe.js";
 
 /**
- * POST /api/upgrade — the main pipeline (PROJECT.md section 2):
+ * POST /api/upgrade - the main pipeline (PROJECT.md section 2):
  * validate → resolve goals from goal mode → generate a standard recipe for
  * the dish name → compute its macros → (location: not yet wired, see
  * below) → rewrite → recompute macros → respond. Route stays thin; all
  * logic lives in services/.
  *
  * Location/availability (steps 6–7 of the lifecycle) are not implemented
- * yet — that is tomorrow's work per the project plan. Per PROJECT.md,
+ * yet - that is tomorrow's work per the project plan. Per PROJECT.md,
  * "Location failure or absence is never an error", so for now we always
  * fall back to a plain rewrite with no availability data, which is a valid
  * instance of that fallback path, not a shortcut around it.

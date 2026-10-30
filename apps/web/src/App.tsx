@@ -11,7 +11,7 @@ export function App() {
   const { isGuest, continueAsGuest } = useGuestMode();
   const [page, setPage] = useState<Page>("tool");
 
-  // Login isn't configured at all for this deployment — go straight to the
+  // Login isn't configured at all for this deployment - go straight to the
   // tool, same as always. Guest mode is the only mode in that case.
   if (!isAuthAvailable) {
     return (

@@ -9,7 +9,7 @@ import { registerRecipesRoute } from "./routes/recipes.js";
 import { registerUpgradeRoute } from "./routes/upgrade.js";
 
 /**
- * SECURITY-SENSITIVE: review by hand (PROJECT.md section 9 — this file
+ * SECURITY-SENSITIVE: review by hand (PROJECT.md section 9 - this file
  * wires up CORS, rate limiting, and the global error handler).
  */
 export async function buildServer() {
@@ -25,7 +25,7 @@ export async function buildServer() {
   await app.register(rateLimit, {
     max: 100,
     timeWindow: "10 minutes",
-    // By IP for everyone, guest or signed in — PROJECT.md section 6.5.
+    // By IP for everyone, guest or signed in - PROJECT.md section 6.5.
     // There's no separate per-user tier; the saved-recipes routes aren't
     // expensive enough (no LLM calls) to need one.
   });

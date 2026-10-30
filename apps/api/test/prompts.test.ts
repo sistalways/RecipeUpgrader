@@ -6,7 +6,7 @@ import { buildRewriteRecipePrompt } from "../src/services/llm/prompts/rewriteRec
  * These tests guard the prompt-injection defense from PROJECT.md section
  * 6.3: untrusted content must stay confined to the user message, inside
  * labeled delimiters, and must never alter the system message's
- * instructions — even when the content itself looks like an instruction
+ * instructions - even when the content itself looks like an instruction
  * ("ignore all previous instructions").
  */
 describe("buildGenerateBaseRecipePrompt", () => {

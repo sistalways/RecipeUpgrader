@@ -5,7 +5,7 @@ import { MacrosSchema } from "./macros.js";
 
 /**
  * The user's fitness goal for this recipe. Maps to a calorie/protein target
- * per serving in code (apps/api/src/services/recipe/goalPresets.ts) — the
+ * per serving in code (apps/api/src/services/recipe/goalPresets.ts) - the
  * user picks a mode, not raw numbers.
  */
 export const GoalModeSchema = z.enum(["cutting", "maintaining", "bulking"]);

@@ -27,7 +27,7 @@ export function SavedRecipesPage() {
           </p>
         )}
         {data && data.recipes.length === 0 && (
-          <p className="text-sm text-stone-400">Nothing saved yet — upgrade a recipe and save it.</p>
+          <p className="text-sm text-stone-400">Nothing saved yet - upgrade a recipe and save it.</p>
         )}
 
         {data && data.recipes.length > 0 && (

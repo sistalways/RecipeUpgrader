@@ -23,7 +23,7 @@ interface RequestOptions<T> {
 
 /**
  * Shared fetch wrapper for every API call. Validates the response against
- * the shared schema before returning it — never trust an HTTP response
+ * the shared schema before returning it - never trust an HTTP response
  * blindly, even from our own API (PROJECT.md section 6.2 / "All API calls
  * go through apps/web/src/api/").
  */

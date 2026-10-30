@@ -27,7 +27,7 @@ export function ToolPage() {
       <div className="max-w-xl text-center">
         <h1 className="text-2xl font-bold text-stone-900">Upgrade a recipe</h1>
         <p className="mt-1 text-sm text-stone-600">
-          Name a dish, pick your goal, and get a recipe that fits — no login required.
+          Name a dish, pick your goal, and get a recipe that fits - no login required.
         </p>
       </div>
 

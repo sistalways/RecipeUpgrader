@@ -3,7 +3,7 @@ import { useCallback, useSyncExternalStore } from "react";
 // Module-level store, not per-component state: every caller of useGuestMode
 // (App.tsx's gating logic, AppHeader's logo/"Sign in" link) must see the
 // same value, and a change from one must be visible to the others
-// immediately. Plain useState per component can't do that — each instance
+// immediately. Plain useState per component can't do that - each instance
 // would have its own copy.
 //
 // Deliberately in-memory only, never persisted: a fresh page load (or
@@ -27,7 +27,7 @@ function getSnapshot() {
   return currentValue;
 }
 
-/** Callable outside React too — used by useAuth to clear a stale guest flag on sign-out. */
+/** Callable outside React too - used by useAuth to clear a stale guest flag on sign-out. */
 export function clearGuestMode() {
   setValue(false);
 }

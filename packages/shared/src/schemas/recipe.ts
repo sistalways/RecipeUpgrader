@@ -51,7 +51,7 @@ export const StandardRecipeSchema = z
 export type StandardRecipe = z.infer<typeof StandardRecipeSchema>;
 
 /**
- * Output of the reasoning model: the rewritten recipe. Still just data —
+ * Output of the reasoning model: the rewritten recipe. Still just data -
  * macros are recomputed in code afterward, never trusted from the model.
  */
 export const UpgradedRecipeSchema = z

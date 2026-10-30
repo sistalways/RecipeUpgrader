@@ -4,7 +4,7 @@ import { MAX_DISH_NAME_LENGTH } from "./recipe.js";
 
 /**
  * Body for POST /api/recipes. Mirrors UpgradeResponseSchema's "standard"
- * and "upgraded" shapes exactly, plus the original request fields — the
+ * and "upgraded" shapes exactly, plus the original request fields - the
  * frontend already has all of this from the /api/upgrade call that
  * produced it, so saving is just resubmitting what was already shown.
  */

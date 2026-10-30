@@ -21,7 +21,7 @@ interface SavedRecipeRow {
 }
 
 function rowToSavedRecipe(row: SavedRecipeRow): SavedRecipe {
-  // Parsed with the same schema the client validates against — a
+  // Parsed with the same schema the client validates against - a
   // malformed row fails loudly instead of silently reaching the client.
   return SavedRecipeSchema.parse({
     id: row.id,

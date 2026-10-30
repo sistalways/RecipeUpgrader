@@ -7,7 +7,7 @@ import { buildGenerateBaseRecipePrompt } from "../llm/prompts/generateBaseRecipe
 /**
  * Generates a standard, typical recipe for a dish name at the requested
  * serving count, using the fast model. This is the "before" baseline for
- * the upgrade — the dish name is untrusted user input and is sanitized
+ * the upgrade - the dish name is untrusted user input and is sanitized
  * before it ever reaches a prompt (PROJECT.md section 6.3).
  */
 export async function generateBaseRecipe(dishName: string, servings: number): Promise<StandardRecipe> {

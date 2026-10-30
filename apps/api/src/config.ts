@@ -39,7 +39,7 @@ const EnvSchema = z.object({
   SUPABASE_ANON_KEY: optionalString(z.string().min(1)),
   SUPABASE_SERVICE_ROLE_KEY: optionalString(z.string().min(1)),
   // Supabase's newer projects verify JWTs against a public key set rather
-  // than a single shared secret — no secret to protect, since a JWKS URL
+  // than a single shared secret - no secret to protect, since a JWKS URL
   // only ever exposes public keys.
   SUPABASE_JWKS_URL: optionalString(z.string().url()),
 });

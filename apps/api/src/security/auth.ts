@@ -7,8 +7,8 @@ import { AuthError } from "../lib/errors.js";
  * SECURITY-SENSITIVE: review by hand (PROJECT.md section 9).
  *
  * Verifies the Supabase-issued JWT on protected routes and attaches the
- * authenticated user to the request. The user ID always comes from here —
- * a verified token's "sub" claim — never from a request body field
+ * authenticated user to the request. The user ID always comes from here -
+ * a verified token's "sub" claim - never from a request body field
  * (PROJECT.md section 6.4: "Never trust a user ID sent in a request
  * body"). The raw access token is also kept on the request so route
  * handlers can pass it through to a per-user Supabase client, letting
