@@ -5,6 +5,7 @@ import Fastify, { type FastifyError } from "fastify";
 import { env } from "./config.js";
 import { AppError } from "./lib/errors.js";
 import { registerHealthRoute } from "./routes/health.js";
+import { registerRecipesRoute } from "./routes/recipes.js";
 import { registerUpgradeRoute } from "./routes/upgrade.js";
 
 /**
@@ -24,8 +25,9 @@ export async function buildServer() {
   await app.register(rateLimit, {
     max: 100,
     timeWindow: "10 minutes",
-    // Guests are identified by IP. There is no per-user limiting yet since
-    // auth isn't wired up (planned for tomorrow) — PROJECT.md section 6.5.
+    // By IP for everyone, guest or signed in — PROJECT.md section 6.5.
+    // There's no separate per-user tier; the saved-recipes routes aren't
+    // expensive enough (no LLM calls) to need one.
   });
 
   app.setErrorHandler((error: FastifyError | AppError, request, reply) => {
@@ -46,6 +48,7 @@ export async function buildServer() {
 
   registerHealthRoute(app);
   registerUpgradeRoute(app);
+  registerRecipesRoute(app);
 
   return app;
 }

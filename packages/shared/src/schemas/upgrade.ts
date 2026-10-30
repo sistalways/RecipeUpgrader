@@ -38,21 +38,25 @@ export const UpgradeRequestSchema = z
 
 export type UpgradeRequest = z.infer<typeof UpgradeRequestSchema>;
 
+export const StandardWithMacrosSchema = z
+  .object({
+    recipe: StandardRecipeSchema,
+    macrosPerServing: MacrosSchema,
+  })
+  .strict();
+
+export const UpgradedWithMacrosSchema = z
+  .object({
+    recipe: UpgradedRecipeSchema,
+    macrosPerServing: MacrosSchema,
+  })
+  .strict();
+
 export const UpgradeResponseSchema = z
   .object({
     resolvedGoals: GoalsSchema,
-    standard: z
-      .object({
-        recipe: StandardRecipeSchema,
-        macrosPerServing: MacrosSchema,
-      })
-      .strict(),
-    upgraded: z
-      .object({
-        recipe: UpgradedRecipeSchema,
-        macrosPerServing: MacrosSchema,
-      })
-      .strict(),
+    standard: StandardWithMacrosSchema,
+    upgraded: UpgradedWithMacrosSchema,
     goalsMet: z.boolean(),
     /** Set when goalsMet is false, or when location/availability data was unavailable. Plain text only. */
     notes: z.string().max(1_000).optional(),

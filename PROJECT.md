@@ -292,8 +292,9 @@ KROGER_CLIENT_ID=      # optional
 KROGER_CLIENT_SECRET=  # optional
 
 SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=   # server only, cache table only
-SUPABASE_JWT_SECRET=
+SUPABASE_ANON_KEY=           # same public key as the frontend's; used server-side to create a per-user client scoped to that user's own access token, so RLS enforces ownership
+SUPABASE_SERVICE_ROLE_KEY=   # server only, reserved for a future shared cache table — never used for saved recipes or any other user-owned data
+SUPABASE_JWKS_URL=           # verifies JWTs against Supabase's public signing keys rather than a shared secret
 
 # apps/web (public values only)
 VITE_API_BASE_URL=http://localhost:3000
