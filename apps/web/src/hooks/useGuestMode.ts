@@ -11,11 +11,11 @@ function readIsGuest(): boolean {
 }
 
 // Module-level store, not per-component state: every caller of useGuestMode
-// (App.tsx's gating logic, AuthPanel's "Sign in" link) must see the same
+// (App.tsx's gating logic, AppHeader's "Sign in" link) must see the same
 // value, and a change from one must be visible to the others immediately.
 // Plain useState per component can't do that — each instance would have
 // its own copy, which was the actual bug here (clicking "Sign in" updated
-// AuthPanel's copy but App.tsx never found out).
+// AppHeader's copy but App.tsx never found out).
 let currentValue = readIsGuest();
 const listeners = new Set<() => void>();
 

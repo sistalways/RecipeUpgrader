@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import type { GoalMode, UpgradeRequest } from "@recipeupgrader/shared";
 import { MAX_DISH_NAME_LENGTH } from "@recipeupgrader/shared";
+import { Button } from "./Button.js";
 
 interface RecipeFormProps {
   onSubmit: (request: UpgradeRequest) => void;
@@ -32,68 +33,72 @@ export function RecipeForm({ onSubmit, isSubmitting }: RecipeFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-xl">
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium text-slate-700">What do you want to make?</span>
+    <form
+      onSubmit={handleSubmit}
+      className="flex w-full max-w-xl flex-col gap-5 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm shadow-stone-900/5 sm:p-8"
+    >
+      <label className="flex flex-col gap-1.5">
+        <span className="text-sm font-semibold text-stone-800">What do you want to make?</span>
         <input
           type="text"
           value={dishName}
           onChange={(e) => setDishName(e.target.value)}
           maxLength={MAX_DISH_NAME_LENGTH}
           placeholder="e.g. cheesecake"
-          className="rounded-md border border-slate-300 p-3 text-sm focus:border-slate-500 focus:outline-none"
+          className="rounded-lg border border-stone-300 p-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
         />
       </label>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="text-sm font-medium text-slate-700 mb-1">Goal</legend>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <legend className="mb-1 text-sm font-semibold text-stone-800">Goal</legend>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           {GOAL_MODES.map((mode) => (
             <label
               key={mode.value}
-              className={`flex flex-col gap-0.5 rounded-md border p-3 text-sm cursor-pointer ${
+              className={`flex cursor-pointer flex-col gap-0.5 rounded-xl border-2 p-3 text-sm transition-colors ${
                 goalMode === mode.value
-                  ? "border-slate-900 bg-slate-50"
-                  : "border-slate-300"
+                  ? "border-emerald-500 bg-emerald-50"
+                  : "border-stone-200 hover:border-stone-300"
               }`}
             >
-              <span className="flex items-center gap-2 font-medium text-slate-800">
+              <span className="flex items-center gap-2 font-semibold text-stone-800">
                 <input
                   type="radio"
                   name="goalMode"
                   value={mode.value}
                   checked={goalMode === mode.value}
                   onChange={() => setGoalMode(mode.value)}
+                  className="accent-emerald-600"
                 />
                 {mode.label}
               </span>
-              <span className="text-xs text-slate-500">{mode.description}</span>
+              <span className="text-xs text-stone-500">{mode.description}</span>
             </label>
           ))}
         </div>
       </fieldset>
 
-      <label className="flex flex-col gap-1 max-w-[10rem]">
-        <span className="text-sm font-medium text-slate-700">Servings</span>
+      <label className="flex max-w-[10rem] flex-col gap-1.5">
+        <span className="text-sm font-semibold text-stone-800">Servings</span>
         <input
           type="number"
           min={1}
           max={100}
           value={servings}
           onChange={(e) => setServings(Number(e.target.value))}
-          className="rounded-md border border-slate-300 p-2 text-sm focus:border-slate-500 focus:outline-none"
+          className="rounded-lg border border-stone-300 p-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
         />
       </label>
 
-      {formError && <p className="text-sm text-red-600">{formError}</p>}
+      {formError && (
+        <p className="text-sm text-red-600" role="alert">
+          {formError}
+        </p>
+      )}
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-      >
+      <Button type="submit" disabled={isSubmitting} className="w-full py-2.5 text-base">
         {isSubmitting ? "Upgrading…" : "Upgrade recipe"}
-      </button>
+      </Button>
     </form>
   );
 }

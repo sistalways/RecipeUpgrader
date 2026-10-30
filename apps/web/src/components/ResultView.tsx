@@ -1,4 +1,5 @@
 import type { UpgradeResponse } from "@recipeupgrader/shared";
+import { Button } from "./Button.js";
 import { MacrosCard } from "./MacrosCard.js";
 import { RecipeCard } from "./RecipeCard.js";
 
@@ -14,39 +15,35 @@ export function ResultView({ result, onSave, isSaving, isSaved }: ResultViewProp
   const { resolvedGoals } = result;
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-3xl">
+    <div className="flex w-full max-w-3xl flex-col gap-6">
       <div
-        className={`rounded-md px-4 py-2 text-sm font-medium ${
-          result.goalsMet ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"
+        className={`rounded-xl px-4 py-3 text-sm font-semibold ${
+          result.goalsMet ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"
         }`}
       >
         {result.goalsMet ? "Goals met ✓" : "Goals not fully met"}
-        <p className="mt-1 font-normal text-xs">
+        <p className="mt-1 text-xs font-normal opacity-80">
           Target: {resolvedGoals.caloriesPerServing} kcal and at least {resolvedGoals.minProteinPerServingG}g
           protein per serving.
         </p>
-        {result.notes && <p className="mt-1 font-normal">{result.notes}</p>}
+        {result.notes && <p className="mt-1 text-xs font-normal opacity-80">{result.notes}</p>}
       </div>
 
       {onSave && (
-        <button
-          onClick={onSave}
-          disabled={isSaving || isSaved}
-          className="self-start rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 disabled:opacity-50"
-        >
+        <Button variant="secondary" onClick={onSave} disabled={isSaving || isSaved} className="self-start">
           {isSaved ? "Saved ✓" : isSaving ? "Saving…" : "Save this recipe"}
-        </button>
+        </Button>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div className="flex flex-col gap-3">
-          <h2 className="text-base font-semibold text-slate-800">Standard recipe</h2>
+          <h2 className="text-base font-bold text-stone-900">Standard recipe</h2>
           <MacrosCard title="Macros (per serving)" macros={result.standard.macrosPerServing} />
           <RecipeCard recipe={result.standard.recipe} />
         </div>
 
         <div className="flex flex-col gap-3">
-          <h2 className="text-base font-semibold text-slate-800">Upgraded recipe</h2>
+          <h2 className="text-base font-bold text-stone-900">Upgraded recipe</h2>
           <MacrosCard title="Macros (per serving)" macros={result.upgraded.macrosPerServing} />
           <RecipeCard recipe={result.upgraded.recipe} />
         </div>
