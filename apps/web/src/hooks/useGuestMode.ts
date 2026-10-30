@@ -1,39 +1,57 @@
-import { useCallback, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "recipeupgrader:guestMode";
 
-/**
- * Remembers "continue as guest" across reloads so a guest isn't asked
- * again every visit. Per-viewer convenience only — never anything that
- * needs to be read back reliably, so a failed localStorage read/write
- * (private browsing, blocked storage) just means asking again, not a bug.
- */
-export function useGuestMode() {
-  const [isGuest, setIsGuest] = useState(() => {
-    try {
-      return localStorage.getItem(STORAGE_KEY) === "1";
-    } catch {
-      return false;
-    }
-  });
+function readIsGuest(): boolean {
+  try {
+    return localStorage.getItem(STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
 
-  const continueAsGuest = useCallback(() => {
-    setIsGuest(true);
-    try {
+// Module-level store, not per-component state: every caller of useGuestMode
+// (App.tsx's gating logic, AuthPanel's "Sign in" link) must see the same
+// value, and a change from one must be visible to the others immediately.
+// Plain useState per component can't do that — each instance would have
+// its own copy, which was the actual bug here (clicking "Sign in" updated
+// AuthPanel's copy but App.tsx never found out).
+let currentValue = readIsGuest();
+const listeners = new Set<() => void>();
+
+function setValue(value: boolean) {
+  currentValue = value;
+  try {
+    if (value) {
       localStorage.setItem(STORAGE_KEY, "1");
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const exitGuestMode = useCallback(() => {
-    setIsGuest(false);
-    try {
+    } else {
       localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      /* ignore */
     }
-  }, []);
+  } catch {
+    /* ignore — per-viewer convenience only */
+  }
+  listeners.forEach((listener) => listener());
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function getSnapshot() {
+  return currentValue;
+}
+
+/** Callable outside React too — used by useAuth to clear a stale guest flag on sign-out. */
+export function clearGuestMode() {
+  setValue(false);
+}
+
+export function useGuestMode() {
+  const isGuest = useSyncExternalStore(subscribe, getSnapshot);
+
+  const continueAsGuest = useCallback(() => setValue(true), []);
+  const exitGuestMode = useCallback(() => setValue(false), []);
 
   return { isGuest, continueAsGuest, exitGuestMode };
 }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { clearGuestMode } from "./useGuestMode.js";
 import { supabase } from "../lib/supabaseClient.js";
 
 interface AuthState {
@@ -68,6 +69,9 @@ export function useAuth() {
   const signOut = useCallback(async () => {
     if (!supabase) return;
     await supabase.auth.signOut();
+    // Otherwise a leftover "continue as guest" flag from before this
+    // person signed in would skip the login screen on the way back out.
+    clearGuestMode();
   }, []);
 
   return {
