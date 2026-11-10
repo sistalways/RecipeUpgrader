@@ -181,6 +181,14 @@ export function AuthGate({ onContinueAsGuest }: { onContinueAsGuest: () => void 
           <Button variant="secondary" onClick={onContinueAsGuest} className="w-full">
             Continue as guest
           </Button>
+
+          <p className="mt-5 text-center text-xs text-stone-400">
+            By continuing, you agree to our{" "}
+            <a href="/privacy.html" className="underline hover:text-stone-700">
+              Privacy Policy
+            </a>
+            .
+          </p>
         </div>
       </div>
     </main>
