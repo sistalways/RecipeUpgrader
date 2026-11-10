@@ -8,11 +8,10 @@ import { useSaveRecipe } from "../hooks/useSavedRecipes.js";
 import { useUpgradeRecipe } from "../hooks/useUpgradeRecipe.js";
 
 export function ToolPage() {
-  const { mutate, data, isPending, isError, error, reset } = useUpgradeRecipe();
-  const [lastRequest, setLastRequest] = useState<UpgradeRequest | null>(null);
-
   const { session } = useAuth();
   const accessToken = session?.access_token;
+  const { mutate, data, isPending, isError, error, reset } = useUpgradeRecipe(accessToken);
+  const [lastRequest, setLastRequest] = useState<UpgradeRequest | null>(null);
   const saveMutation = useSaveRecipe(accessToken);
 
   function handleSubmit(request: UpgradeRequest) {
@@ -27,7 +26,7 @@ export function ToolPage() {
       <div className="max-w-xl text-center">
         <h1 className="text-2xl font-bold text-stone-900">Upgrade a recipe</h1>
         <p className="mt-1 text-sm text-stone-600">
-          Name a dish, pick your goal, and get a recipe that fits - no login required.
+          Name a dish, pick your goal, and get a recipe that fits.
         </p>
       </div>
 

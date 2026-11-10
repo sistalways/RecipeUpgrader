@@ -25,9 +25,9 @@ export async function buildServer() {
   await app.register(rateLimit, {
     max: 100,
     timeWindow: "10 minutes",
-    // By IP for everyone, guest or signed in - PROJECT.md section 6.5.
-    // There's no separate per-user tier; the saved-recipes routes aren't
-    // expensive enough (no LLM calls) to need one.
+    // By IP across every route - PROJECT.md section 6.5. /api/upgrade adds
+    // a stricter per-user limit on top (see routes/upgrade.ts); the
+    // saved-recipes routes aren't expensive enough (no LLM calls) to need one.
   });
 
   app.setErrorHandler((error: FastifyError | AppError, request, reply) => {

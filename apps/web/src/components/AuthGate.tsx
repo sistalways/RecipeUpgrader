@@ -1,24 +1,19 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./Button.js";
 import { useAuth } from "../hooks/useAuth.js";
 
 const FEATURES = [
   "Real USDA nutrition data - never an AI's guess",
   "Rewrites your dish, keeps it recognizable",
-  "No signup needed to try it",
+  "One click to sign in with Google - no password",
 ];
-
-const REDIRECT_ERROR_MESSAGES: Record<string, string> = {
-  otp_expired: "That confirmation link has expired. Sign up again to get a new one.",
-  access_denied: "That confirmation link is no longer valid. Sign up again to get a new one.",
-};
 
 /**
  * Supabase redirects back here with the error in the URL hash
- * (#error=...&error_code=...&error_description=...) when a confirmation
- * or magic link is invalid or expired, rather than failing on Supabase's
- * own domain. Reads it once, then strips it from the URL so a reload
- * doesn't keep re-showing it.
+ * (#error=...&error_code=...&error_description=...) when Google sign-in is
+ * cancelled or fails, rather than failing on Supabase's own domain. Reads
+ * it once, then strips it from the URL so a reload doesn't keep re-showing
+ * it.
  */
 function readAndClearRedirectError(): string | null {
   if (typeof window === "undefined" || !window.location.hash) {
@@ -26,61 +21,55 @@ function readAndClearRedirectError(): string | null {
   }
 
   const params = new URLSearchParams(window.location.hash.slice(1));
-  const errorCode = params.get("error_code");
-  const description = params.get("error_description");
-  if (!errorCode && !description) {
+  if (!params.get("error") && !params.get("error_code") && !params.get("error_description")) {
     return null;
   }
 
   window.history.replaceState(null, "", window.location.pathname + window.location.search);
 
+  return "Google sign-in didn't finish. Please try again.";
+}
+
+function GoogleLogo() {
   return (
-    (errorCode && REDIRECT_ERROR_MESSAGES[errorCode]) ??
-    description?.replace(/\+/g, " ") ??
-    "That link is no longer valid. Please try again."
+    <svg viewBox="0 0 48 48" className="h-4 w-4" aria-hidden="true">
+      <path
+        fill="#EA4335"
+        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+      />
+      <path
+        fill="#4285F4"
+        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+      />
+      <path
+        fill="#34A853"
+        d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+      />
+    </svg>
   );
 }
 
 /**
- * The entry screen: the product pitch plus sign in, sign up, or continue
- * as a guest. Shown only when login is configured and there's no active
- * session yet - once either path succeeds, App.tsx stops rendering this
- * and shows the tool.
+ * The entry screen: the product pitch plus sign in with Google. Shown
+ * whenever there's no active session - sign-in is required to use the
+ * tool. Once it succeeds, App.tsx stops rendering this and shows the tool.
  */
-export function AuthGate({ onContinueAsGuest }: { onContinueAsGuest: () => void }) {
-  const { signIn, signUp, authError } = useAuth();
-  const [mode, setMode] = useState<"signIn" | "signUp">("signIn");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [confirmationMessage, setConfirmationMessage] = useState<string | null>(null);
+export function AuthGate() {
+  const { signInWithGoogle, authError } = useAuth();
   const [redirectError, setRedirectError] = useState<string | null>(null);
 
   useEffect(() => {
     const message = readAndClearRedirectError();
-    if (message) {
-      setRedirectError(message);
-      setMode("signUp");
-    }
+    if (message) setRedirectError(message);
   }, []);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setConfirmationMessage(null);
+  function handleGoogleSignIn() {
     setRedirectError(null);
-    setIsSubmitting(true);
-    try {
-      if (mode === "signIn") {
-        await signIn(email, password);
-      } else {
-        const { needsConfirmation } = await signUp(email, password);
-        if (needsConfirmation) {
-          setConfirmationMessage("Check your email to confirm your account, then sign in.");
-        }
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
+    void signInWithGoogle();
   }
 
   return (
@@ -115,72 +104,28 @@ export function AuthGate({ onContinueAsGuest }: { onContinueAsGuest: () => void 
           </ul>
         </div>
 
-        {/* Sign in / sign up / guest */}
-        <div className="w-full max-w-sm rounded-2xl border border-stone-200 bg-white p-6 shadow-lg shadow-stone-900/5 sm:p-8">
+        {/* Sign in */}
+        <div className="w-full max-w-sm self-center rounded-2xl border border-stone-200 bg-white p-6 shadow-lg shadow-stone-900/5 sm:p-8">
           <div className="mb-5 text-center">
-            <h2 className="text-lg font-bold text-stone-900">
-              {mode === "signIn" ? "Welcome back" : "Create an account"}
-            </h2>
-            <p className="mt-1 text-sm text-stone-500">Sign in to save your recipes, or skip it entirely.</p>
+            <h2 className="text-lg font-bold text-stone-900">Get started</h2>
+            <p className="mt-1 text-sm text-stone-500">Sign in to upgrade recipes and save them for later.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-            <input
-              type="email"
-              required
-              placeholder="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="rounded-lg border border-stone-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
-            />
-            <input
-              type="password"
-              required
-              minLength={6}
-              placeholder="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="rounded-lg border border-stone-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
-            />
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-              {mode === "signIn" ? "Sign in" : "Sign up"}
-            </Button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode(mode === "signIn" ? "signUp" : "signIn");
-                setConfirmationMessage(null);
-              }}
-              className="text-sm text-stone-500 underline hover:text-stone-800"
-            >
-              {mode === "signIn" ? "Need an account? Sign up" : "Have an account? Sign in"}
-            </button>
-            {authError && (
-              <p className="text-sm text-red-600" role="alert">
-                {authError}
-              </p>
-            )}
-            {confirmationMessage && (
-              <p className="text-sm text-emerald-700" role="status">
-                {confirmationMessage}
-              </p>
-            )}
-            {redirectError && (
-              <p className="text-sm text-amber-700" role="alert">
-                {redirectError}
-              </p>
-            )}
-          </form>
-
-          <div className="my-5 flex items-center gap-2 text-xs text-stone-400">
-            <div className="h-px flex-1 bg-stone-200" />
-            or
-            <div className="h-px flex-1 bg-stone-200" />
-          </div>
-
-          <Button variant="secondary" onClick={onContinueAsGuest} className="w-full">
-            Continue as guest
+          <Button variant="secondary" onClick={handleGoogleSignIn} className="w-full">
+            <GoogleLogo />
+            Continue with Google
           </Button>
+
+          {authError && (
+            <p className="mt-3 text-sm text-red-600" role="alert">
+              {authError}
+            </p>
+          )}
+          {redirectError && (
+            <p className="mt-3 text-sm text-amber-700" role="alert">
+              {redirectError}
+            </p>
+          )}
 
           <p className="mt-5 text-center text-xs text-stone-400">
             By continuing, you agree to our{" "}

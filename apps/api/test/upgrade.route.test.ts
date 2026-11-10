@@ -1,15 +1,28 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 
+// Each test token "<name>" verifies as user "user-<name>"; "bad-token" fails.
+const jwtVerify = vi.fn(async (token: string) => {
+  if (token === "bad-token") throw new Error("invalid signature");
+  return { payload: { sub: `user-${token}` } };
+});
+vi.mock("jose", () => ({
+  createRemoteJWKSet: vi.fn(() => "mock-key-set"),
+  jwtVerify: (token: string) => jwtVerify(token),
+}));
+
+const AUTH = { authorization: "Bearer alice" };
+
+const generateBaseRecipe = vi.fn(async () => ({
+  title: "Chicken and rice",
+  servings: 2,
+  ingredients: [
+    { name: "chicken breast", quantity: 200, unit: "g" },
+    { name: "rice", quantity: 180, unit: "g" },
+  ],
+}));
 vi.mock("../src/services/recipe/generateBaseRecipe.js", () => ({
-  generateBaseRecipe: vi.fn(async () => ({
-    title: "Chicken and rice",
-    servings: 2,
-    ingredients: [
-      { name: "chicken breast", quantity: 200, unit: "g" },
-      { name: "rice", quantity: 180, unit: "g" },
-    ],
-  })),
+  generateBaseRecipe: () => generateBaseRecipe(),
 }));
 
 vi.mock("../src/services/recipe/rewriteRecipe.js", () => ({
@@ -50,6 +63,56 @@ describe("POST /api/upgrade", () => {
   afterEach(async () => {
     await app?.close();
     resolveAvailability.mockClear();
+    generateBaseRecipe.mockClear();
+  });
+
+  it("rejects a request with no bearer token with 401 and never calls the model", async () => {
+    app = await buildServer();
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/upgrade",
+      payload: { dishName: "chicken and rice bowl", goalMode: "bulking", servings: 2 },
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json().error.code).toBe("AUTH_ERROR");
+    expect(generateBaseRecipe).not.toHaveBeenCalled();
+  });
+
+  it("rejects an invalid token with 401 and never calls the model", async () => {
+    app = await buildServer();
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/upgrade",
+      headers: { authorization: "Bearer bad-token" },
+      payload: { dishName: "chicken and rice bowl", goalMode: "bulking", servings: 2 },
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(generateBaseRecipe).not.toHaveBeenCalled();
+  });
+
+  it("limits each user to 10 upgrades per window, independently of other users", async () => {
+    app = await buildServer();
+    const upgradeAs = (user: string) =>
+      app.inject({
+        method: "POST",
+        url: "/api/upgrade",
+        headers: { authorization: `Bearer ${user}` },
+        payload: { dishName: "chicken and rice bowl", goalMode: "bulking", servings: 2 },
+      });
+
+    for (let i = 0; i < 10; i++) {
+      expect((await upgradeAs("alice")).statusCode).toBe(200);
+    }
+    const limited = await upgradeAs("alice");
+    expect(limited.statusCode).toBe(429);
+    expect(limited.json().error.code).toBe("RATE_LIMIT_ERROR");
+
+    // Same IP (every inject comes from 127.0.0.1), different user: not limited.
+    expect((await upgradeAs("bob")).statusCode).toBe(200);
   });
 
   it("looks up availability when a location is given, and includes it in the response", async () => {
@@ -58,6 +121,7 @@ describe("POST /api/upgrade", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/upgrade",
+      headers: AUTH,
       payload: { dishName: "chicken and rice bowl", goalMode: "bulking", servings: 2, location: { zip: "10001" } },
     });
 
@@ -75,6 +139,7 @@ describe("POST /api/upgrade", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/upgrade",
+      headers: AUTH,
       payload: { dishName: "chicken and rice bowl", goalMode: "bulking", servings: 2 },
     });
 
@@ -91,6 +156,7 @@ describe("POST /api/upgrade", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/upgrade",
+      headers: AUTH,
       payload: { dishName: "chicken and rice bowl", goalMode: "bulking", servings: 2, location: { zip: "00000" } },
     });
 
@@ -109,6 +175,7 @@ describe("POST /api/upgrade", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/upgrade",
+      headers: AUTH,
       payload: { dishName: "chicken and rice bowl", goalMode: "bulking", servings: 2 },
     });
 
@@ -127,6 +194,7 @@ describe("POST /api/upgrade", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/upgrade",
+      headers: AUTH,
       payload: { dishName: "", goalMode: "bulking", servings: 2 },
     });
 
@@ -140,6 +208,7 @@ describe("POST /api/upgrade", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/upgrade",
+      headers: AUTH,
       payload: { dishName: "chicken", goalMode: "bulking", servings: 2, notAllowed: true },
     });
 
@@ -152,6 +221,7 @@ describe("POST /api/upgrade", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/upgrade",
+      headers: AUTH,
       payload: { dishName: "chicken", goalMode: "shredding", servings: 2 },
     });
 
