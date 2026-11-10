@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy - RecipeUpgrader</title>
+    <link rel="stylesheet" href="/legal.css" />
+  </head>
+  <body>
+    <main>
+      <p><a href="/">← Back to RecipeUpgrader</a></p>
+
+      <h1>Privacy Policy</h1>
+      <p class="meta">Last updated: November 9, 2026</p>
+
+      <p>
+        RecipeUpgrader turns a dish name into a recipe that fits your fitness goal. This page explains
+        what information the app collects, how it's used, and who it's shared with. RecipeUpgrader is an
+        open-source project; you can read exactly how it handles data in its
+        <a href="https://github.com/sistalways/RecipeUpgrader">source code</a>.
+      </p>
+
+      <h2>What we collect</h2>
+      <ul>
+        <li>
+          <strong>Your Google account basics.</strong> When you sign in with Google, we receive your
+          name, email address, profile picture link, and Google account ID. We use these only to create
+          your account and sign you in. We never see or store your Google password.
+        </li>
+        <li>
+          <strong>Recipes you save.</strong> If you save a recipe, we store the dish name, your goal
+          (cutting, maintaining, or bulking), servings, and the generated recipes and nutrition numbers,
+          linked to your account.
+        </li>
+        <li>
+          <strong>What you type into the app.</strong> The dish name, goal, and servings you enter are
+          used to generate your recipe. They are not stored unless you save the recipe.
+        </li>
+        <li>
+          <strong>Location, only if you choose to share it.</strong> If you enter a ZIP code or click
+          "Use my location", we use it to find nearby grocery stores. Coordinates are rounded to about
+          1 km before they are used. Your location is never saved to your account or written to our
+          logs.
+        </li>
+        <li>
+          <strong>Basic technical logs.</strong> Our server records things like how long a request took,
+          whether it succeeded, and which goal was chosen. These logs do not include your email, your
+          location, or the dish names you enter. Your IP address is used briefly to prevent abuse
+          (rate limiting) and is not stored with your account.
+        </li>
+      </ul>
+
+      <h2>What we don't do</h2>
+      <ul>
+        <li>We don't sell your information or share it with advertisers.</li>
+        <li>We don't show ads or use tracking or advertising cookies.</li>
+        <li>We don't use your information to train AI models.</li>
+      </ul>
+      <p>
+        Your sign-in session is kept in your browser's local storage so you stay signed in. It's removed
+        when you sign out.
+      </p>
+
+      <h2>Services that process your information</h2>
+      <p>To make the app work, some information is sent to these services:</p>
+      <ul>
+        <li><strong>Google</strong> - signing you in.</li>
+        <li>
+          <strong>Supabase</strong> - managing your account and storing the recipes you save.
+        </li>
+        <li>
+          <strong>Nebius Token Factory</strong> (running NVIDIA Nemotron AI models) - receives the dish
+          name, goal, servings, and recipe text to generate and rewrite your recipe. It does not receive
+          your name or email.
+        </li>
+        <li>
+          <strong>USDA FoodData Central</strong> - receives ingredient names to look up nutrition data.
+        </li>
+        <li>
+          <strong>Zippopotam.us</strong> and <strong>OpenStreetMap</strong> - only if you share a
+          location: receive your ZIP code or rounded coordinates to find nearby stores.
+        </li>
+        <li>
+          <strong>Tavily</strong> - only if you share a location: receives ingredient and store names to
+          check what's sold nearby.
+        </li>
+        <li>
+          <strong>Cloudflare</strong> and <strong>Render</strong> - host the website and server. Like any
+          web host, they process your IP address to deliver pages and requests.
+        </li>
+      </ul>
+
+      <h2>Google user data</h2>
+      <p>
+        RecipeUpgrader's use of information received from Google APIs adheres to the
+        <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>,
+        including the Limited Use requirements. We only request your basic profile and email address,
+        and use them only to sign you in.
+      </p>
+
+      <h2>Keeping and deleting your data</h2>
+      <p>
+        You can delete any saved recipe at any time from the Saved recipes page. Your account and saved
+        recipes are kept until you ask us to delete them. To delete your account and everything linked to
+        it, open an issue on our
+        <a href="https://github.com/sistalways/RecipeUpgrader/issues">GitHub page</a> asking for account
+        deletion (don't include personal details there; we'll follow up). You can also remove
+        RecipeUpgrader's access to your Google account at any time from your
+        <a href="https://myaccount.google.com/permissions">Google account settings</a>.
+      </p>
+
+      <h2>Children</h2>
+      <p>RecipeUpgrader is not intended for children under 13, and we don't knowingly collect their information.</p>
+
+      <h2>Changes to this policy</h2>
+      <p>
+        If this policy changes, we'll update this page and the date at the top. Significant changes will
+        be noted on the site.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions about this policy? Open an issue on our
+        <a href="https://github.com/sistalways/RecipeUpgrader/issues">GitHub page</a>.
+      </p>
+    </main>
+  </body>
+</html>
