@@ -2,23 +2,23 @@ import { useState } from "react";
 import { AppHeader, type Page } from "./components/AppHeader.js";
 import { AuthGate } from "./components/AuthGate.js";
 import { useAuth } from "./hooks/useAuth.js";
-import { useGuestMode } from "./hooks/useGuestMode.js";
 import { SavedRecipesPage } from "./pages/SavedRecipesPage.js";
 import { ToolPage } from "./pages/ToolPage.js";
 
 export function App() {
   const { isAuthAvailable, session, isLoading } = useAuth();
-  const { isGuest, continueAsGuest } = useGuestMode();
   const [page, setPage] = useState<Page>("tool");
 
-  // Login isn't configured at all for this deployment - go straight to the
-  // tool, same as always. Guest mode is the only mode in that case.
+  // Sign-in is required, so without Supabase configured there's no way in.
+  // Say so plainly rather than showing a tool every request would fail on.
   if (!isAuthAvailable) {
     return (
-      <div className="min-h-screen bg-stone-50">
-        <AppHeader page="tool" onNavigate={() => undefined} />
-        <ToolPage />
-      </div>
+      <main className="flex min-h-screen items-center justify-center bg-stone-50 px-4">
+        <p className="max-w-sm text-center text-sm text-stone-600" role="alert">
+          Sign-in isn't configured for this deployment. Set VITE_SUPABASE_URL and
+          VITE_SUPABASE_ANON_KEY (see README) and reload.
+        </p>
+      </main>
     );
   }
 
@@ -32,16 +32,14 @@ export function App() {
     );
   }
 
-  if (!session && !isGuest) {
-    return <AuthGate onContinueAsGuest={continueAsGuest} />;
+  if (!session) {
+    return <AuthGate />;
   }
-
-  const currentPage: Page = page === "saved" && session ? "saved" : "tool";
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <AppHeader page={currentPage} onNavigate={setPage} />
-      {currentPage === "saved" ? <SavedRecipesPage /> : <ToolPage />}
+      <AppHeader page={page} onNavigate={setPage} />
+      {page === "saved" ? <SavedRecipesPage /> : <ToolPage />}
     </div>
   );
 }

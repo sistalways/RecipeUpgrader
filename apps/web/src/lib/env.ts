@@ -8,5 +8,5 @@ export const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL ?? "http:/
 export const SUPABASE_URL: string | undefined = import.meta.env.VITE_SUPABASE_URL;
 export const SUPABASE_ANON_KEY: string | undefined = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-/** Login/save-recipe is optional - the guest flow works with these unset. */
+/** Sign-in is required to use the app, so these must be set for it to work. */
 export const isAuthConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);

@@ -15,13 +15,13 @@ RecipeUpgrader turns a dish name into a recipe that fits the user's fitness goal
 4. Macros are computed **in code** from USDA FoodData Central data, for both the standard recipe and (after step 6) the upgraded one. The LLM never invents nutrition numbers.
 5. (Optional) User shares location or enters a ZIP code. We find nearby grocery stores and check which candidate substitutes are available there.
 6. A reasoning Nemotron model rewrites the standard recipe to hit the resolved goals, preferring ingredients available nearby.
-7. User sees standard-vs-upgraded macros, the upgraded recipe, and a shopping list grouped by store. Logged-in users can save it.
+7. User sees standard-vs-upgraded macros, the upgraded recipe, and a shopping list grouped by store, and can save it.
 
 > Note: this supersedes an earlier version of this flow where the user pasted their own recipe text and entered raw numeric goals directly. That path is gone — dish name + goal mode is the only entry point now.
 
 **Hackathon constraints (Nebius x NVIDIA Global AI Hackathon, deadline Fri Oct 30, 2026, 1:00 PM EDT):**
 - **All LLM calls go through Nebius Token Factory** using **NVIDIA Nemotron** models. No other LLM providers anywhere in the codebase.
-- The app must work for judges **without logging in** (guest mode is the default).
+- Users must **sign in with Google** to use the app. (During the hackathon a guest mode let judges use it without logging in; it was removed after the submission deadline.)
 - The repo is public with an open-source license.
 
 ---
@@ -58,8 +58,8 @@ Model IDs live **only** in env vars, never hardcoded. Every model call goes thro
 
 ### Request lifecycle for `POST /api/upgrade`
 
-1. Validate request body with Zod (`UpgradeRequestSchema`: `dishName`, `goalMode`, `servings`). Reject on failure with 400.
-2. Rate-limit check (per IP for guests, per user ID when authenticated).
+1. Verify the Supabase JWT (`requireAuth`), rejecting with 401 if it's missing or invalid, then rate-limit per user ID (on top of the global per-IP limit).
+2. Validate request body with Zod (`UpgradeRequestSchema`: `dishName`, `goalMode`, `servings`). Reject on failure with 400.
 3. `goalModeToGoals()` → pure function, no I/O → resolves `goalMode` + `servings` into a `Goals` (calories/serving, min protein/serving). Returned in the response so the user can see what target was actually applied.
 4. `generateBaseRecipe()` → fast model generates a standard, typical recipe for `dishName` at the requested servings → validate with `StandardRecipeSchema` → retry once on validation failure → 502 if still invalid.
 5. `computeMacros()` → USDA lookups (cached) → pure TypeScript math. Run once for the standard recipe.
@@ -199,7 +199,7 @@ Do not add new dependencies without a clear reason. Prefer well-maintained packa
 - Integration tests for routes with external services mocked.
 - At least one test proving a user cannot read another user's saved recipes (RLS).
 - At least one test proving prompt-injection text in Tavily results does not change model instructions (see Security).
-- Playwright smoke test of the main guest flow.
+- Playwright smoke test of the main signed-in flow (Supabase and the API mocked), plus a check that signed-out visitors can't reach the tool.
 - `pnpm test` must pass before merging.
 
 ### Git
@@ -245,13 +245,13 @@ Rules:
 - The frontend renders model output as text. **No `dangerouslySetInnerHTML`**, no rendering model output as HTML or Markdown-with-HTML.
 
 ### 6.4 Auth and data access
-- Supabase Auth. The API verifies the Supabase JWT on protected routes in `security/auth.ts`. Guest routes do not require auth.
+- Supabase Auth, with Google as the only sign-in provider (no passwords). The API verifies the Supabase JWT in `security/auth.ts` on every route except `/api/health`.
 - **Row Level Security is enabled on every table.** Saved recipes are readable and writable only by their owner (`auth.uid() = user_id`).
 - The Supabase **service role key** is used only server-side, only for the shared cache table, and never in code paths that handle user-owned data.
 - Never trust a user ID sent in a request body. Always take it from the verified JWT.
 
 ### 6.5 Abuse and cost protection
-- Rate limiting on all `/api/*` routes, stricter on `/api/upgrade` (e.g. guests: 10 per 10 minutes per IP).
+- Rate limiting on all `/api/*` routes, stricter on `/api/upgrade` (10 per 10 minutes per signed-in user, on top of the per-IP limit).
 - Timeouts on every external call (e.g. LLM 60s, others 10s).
 - Cap the number of Tavily queries per request (e.g. 8) and cache results with a TTL (e.g. 24 hours) - currently in-memory per process, not yet Supabase-backed (same stand-in already used for USDA lookups).
 - Cache USDA lookups (they rarely change).
@@ -311,7 +311,7 @@ VITE_SUPABASE_ANON_KEY=
 - [ ] Untrusted content handled per section 6.3
 - [ ] Errors map to safe client messages
 - [ ] Tests added and `pnpm lint && pnpm typecheck && pnpm test` passes
-- [ ] Works in guest mode and degrades gracefully if location or an external API fails
+- [ ] Works for a signed-in user and degrades gracefully if location or an external API fails
 - [ ] README updated if setup, architecture, or env vars changed
 
 ---
